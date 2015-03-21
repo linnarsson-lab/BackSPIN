@@ -6,7 +6,7 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 ## Getting started
 
-**Note:** BackSPIN is currently under development and there is no production-ready version. 
+**Note: BackSPIN is currently under development and there is no production-ready version.**
 
 You can download an alpha version for Mac OS X on the [release page](https://github.com/linnarsson-group/BackSPIN/releases).
 
