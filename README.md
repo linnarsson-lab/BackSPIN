@@ -2,7 +2,7 @@
 
 An implementation of the BackSPIN biclustering algorithm as described in Zeisel et al. *Cell types in the mouse cortex and hippocampus revealed by single-cell RNA-seq* **Science** 2015 (PMID: 25700174, doi: 10.1126/science.aaa1934). Please cite this paper if you use this algorithm in your work.
 
-Original implementation by Amit Zeisel. This repo contains a standalone command-line version of BackSPIN, implemented in Python by Gioele La Manno. 
+Original MATLAB implementation by Amit Zeisel. This repo contains a standalone command-line version of BackSPIN, implemented in Python by Gioele La Manno. 
 
 ## Requirements
 
