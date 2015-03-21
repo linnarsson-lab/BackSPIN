@@ -4,9 +4,16 @@ An implementation of the BackSPIN biclustering algorithm as described in Zeisel 
 
 Original MATLAB implementation by Amit Zeisel. This repo contains a standalone command-line version of BackSPIN, implemented in Python by Gioele La Manno. 
 
-## Requirements
+## Getting started
 
-This version requires [pandas](http://pandas.pydata.org) and [numpy](http://www.numpy.org).
+BackSPIN is currently under development and there is no production-ready version. 
+
+You can download an alpha version for Mac OS X on the [release page](https://github.com/linnarsson-group/BackSPIN/releases).
+
+For other platforms, download the source and run from Python. BackSPIN requires [pandas](http://pandas.pydata.org) and [numpy](http://www.numpy.org).
+
+BackSPIN takes input in CEF format and produces an annotated CEF file as output. Use [ceftools](https://github.com/linnarsson-group/ceftools) to create and manipulate CEF files.
+
 
 ## Synopsis
 
