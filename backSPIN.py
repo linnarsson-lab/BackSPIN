@@ -374,8 +374,8 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
     stop_const: float
         minimum score that a breaking point has to reach to be suitable for splitting
     low_thrs: float
-        genes with average lower than this threshold are assigned to either of the 
-        splitting group reling on genes that are higly correlated with them
+        if the difference between the average expression of two groups is lower than threshold the algorythm 
+        uses higly correlated gens to assign the gene to one of the two groups
     verbose: bool
         information about the split is printed
 
@@ -413,10 +413,10 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         mean_gr1 = mean( sorted_data[:,gr1],1 )
         mean_gr2 = mean( sorted_data[:,gr2],1 )
         d = abs( mean_gr1 - mean_gr2 )
-        # Deal with lowly expressed genes using correlation with other genes to assign them to one of the groups
+        # Deal with low variance genes using correlation with other genes to assign them to one of the groups
         # This is  considered reliable if the original group contained more than 20 genes 
         if len(d) > 20:
-            # For every gene lower than a threshold 
+            # For every difference lower than a threshold 
             for i in range(len(d)): 
                 if d[i] < low_thrs:
                     IN = Rgenes[i,:] > percentile(Rgenes[i,:], 100 - 100*(20/len(d)))
@@ -510,8 +510,8 @@ def usage():
 
        -o [outputfolder]
        --output=[outputfolder]
-              The name of the folder where the output will be written (all the output will be 
-              enclosed in a folder named runout_ddmmyyhhmmss)
+              The name of the folder where the output will be written (output will be a 
+              file named results_ddMMyyhhmmss.cef)
 
        -d [int]
               Depth/Number of levels: The number of nested splits that will be tried by the algorythm
@@ -543,7 +543,8 @@ def usage():
               Minimum score that a breaking point has to reach to be suitable for splitting.
               Defaults to 1.15
        -r [float]
-              Mean Threshold for a gene to be considered low.
+              If the difference between the average expression of two groups is lower than threshold the algorythm 
+              uses higly correlated gens to assign the gene to one of the two groups
               Defaults to 0.2
        -b [[axisvalue]]
               Run normal SPIN instead of backSPIN.
@@ -624,8 +625,7 @@ if __name__ == '__main__':
     if outputfolder_path == None:
         outputfolder_path = os.getcwd()
     
-    outfiles_path = os.path.join( outputfolder_path, 'runout_%s' % time.strftime('%d%m%y%H%M%S') )
-    os.mkdir( outfiles_path )
+    outfiles_path = os.path.join( outputfolder_path, 'results_%s.cef' % time.strftime('%d%m%y%H%M%S') )
 
     try:
         if verbose:
@@ -673,7 +673,7 @@ if __name__ == '__main__':
 
         output_cef.set_matrix(array(input_cef.matrix)[results.genes_order,:][:,results.cells_order])
 
-        output_cef.writeCEF(os.path.join( outfiles_path, 'result.cef') )
+        output_cef.writeCEF( outfiles_path )
 
     else:
 
@@ -706,7 +706,7 @@ if __name__ == '__main__':
 
         output_cef.set_matrix(data[results[0],:][:,results[1]])
 
-        output_cef.writeCEF(os.path.join( outfiles_path, 'result.cef') )
+        output_cef.writeCEF( outfiles_path )
 
 
 
