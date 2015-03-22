@@ -10,7 +10,7 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 You can download an alpha version for Mac OS X on the [release page](https://github.com/linnarsson-lab/BackSPIN/releases).
 
-For other platforms, download the source and run from Python. BackSPIN requires [pandas](http://pandas.pydata.org) and [numpy](http://www.numpy.org).
+For other platforms, download the source and run from Python. BackSPIN requires [numpy](http://www.numpy.org).
 
 BackSPIN takes input in CEF format and produces an annotated CEF file as output. Use [ceftools](https://github.com/linnarsson-lab/ceftools) to create and manipulate CEF files.
 
