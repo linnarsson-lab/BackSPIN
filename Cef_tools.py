@@ -125,7 +125,6 @@ class CEF_obj(object):
 			#Write rows
 			for i in range(self.rows):
 				for j in range(self.row_attr):
-					print j, i
 					fout.write( unicode(self.row_attr_values[j][i]) + u'\t')
 				fout.write(u'\t')
 				fout.write(u'\t'.join( [unicode(el) for el in self.matrix[i]] ) )
