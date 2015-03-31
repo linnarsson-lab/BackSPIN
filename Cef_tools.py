@@ -80,7 +80,7 @@ class CEF_obj(object):
 		with open(filepath, 'rb') as fin:
 			# Read cef file first line
 			self.header, self.row_attr, self.col_attr, self.rows,\
-			self.cols, self.flags = fin.readline().rstrip('\n').split('\t')[1:7]
+			self.cols, self.flags = fin.readline().rstrip('\n').rstrip('\r').split('\t')[1:7]
 			self.header = int(self.header)
 			self.row_attr = int( self.row_attr )
 			self.col_attr = int(self.col_attr)
@@ -90,18 +90,18 @@ class CEF_obj(object):
 			self.row_attr_values = [[] for _ in xrange(self.row_attr)]
 			# Read header
 			for i in range(self.header):
-				name, value = fin.readline().rstrip('\n').split('\t')[:2]
+				name, value = fin.readline().rstrip('\n').rstrip('\r').split('\t')[:2]
 				self.header_names.append(name)
 				self.header_values.append(value)
 			# Read col attr
 			for i in range(self.col_attr):
-				line_col_attr = fin.readline().rstrip('\n').split('\t')[self.row_attr:]
+				line_col_attr = fin.readline().rstrip('\n').rstrip('\r').split('\t')[self.row_attr:]
 				self.col_attr_names.append( line_col_attr[0] )
 				self.col_attr_values.append( line_col_attr[1:] ) 
 			#Read row attr and matrix
-			self.row_attr_names += fin.readline().rstrip('\n').split('\t')[:self.row_attr]
+			self.row_attr_names += fin.readline().rstrip('\n').rstrip('\r').split('\t')[:self.row_attr]
 			for _ in xrange(self.rows):
-				linelist = fin.readline().rstrip('\n').split('\t')
+				linelist = fin.readline().rstrip('\n').rstrip('\r').split('\t')
 				for n, entry in enumerate( linelist[:self.row_attr] ):
 					self.row_attr_values[n].append( entry )
 				self.matrix.append( [matrix_dtype(el) for el in linelist[self.row_attr+1:] ])
@@ -125,6 +125,7 @@ class CEF_obj(object):
 			#Write rows
 			for i in range(self.rows):
 				for j in range(self.row_attr):
+					print j, i
 					fout.write( unicode(self.row_attr_values[j][i]) + u'\t')
 				fout.write(u'\t')
 				fout.write(u'\t'.join( [unicode(el) for el in self.matrix[i]] ) )

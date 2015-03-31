@@ -666,7 +666,7 @@ if __name__ == '__main__':
         for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
             output_cef.add_row_attr(r_name, array(r_val)[results.genes_order])
 
-        for level, groups in enumerate( results.cells_gr_level.T ):
+        for level, groups in enumerate( results.genes_gr_level.T ):
             output_cef.add_row_attr('Groups_lvl%i' % level, [int(el) for el in groups])
         for level, groups in enumerate( results.cells_gr_level.T ):
             output_cef.add_col_attr('Groups_lvl%i' % level, [int(el) for el in groups])
