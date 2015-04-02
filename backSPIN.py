@@ -487,10 +487,41 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
             print 'No splitting score was : %.4f' % (max([score1,score2])/avg_tot)
         return False
 
+def feature_selection(data,thrs, verbose=False):
+    try:
+        from scipy.optimize import minimize
+    except ImportError:
+        print "WARNING: Feature selection was skipped becouse scipy is required. Install scipy to run feature selection."
+        return arange(data.shape[0])
+    if thrs>= data.shape[0]:
+        if verbose:
+            print "Trying to sleect %i features but only %i genes available." %( thrs, data.shape[0])
+            print "Skipping feature selection"
+        return arange(data.shape[0])
+    ix_genes = arange(data.shape[0])
+    eightperK = int(ceil(8*data.shape[0]/1000.))
+    twoperK = int(ceil(2*data.shape[0]/1000.))
+    # is at least 1 molecule in 0.8% of thecells, is at least 2 molecules in 0.2% of the cells
+    condition = (sum(data>=1, 1)>= eightperK) & (sum(data>=2, 1)>=twoperK) 
+    ix_genes = ix_genes[condition]
+    
+    mu = data[ix_genes,:].mean(1)
+    sigma = data[ix_genes,:].std(1, ddof=1)
+    cv = sigma/mu
+
+    x0 = [0.5,0.5]
+    fun = lambda x, mu, cv: sum(abs( log2(mu**(-x[0]) +x[1]) - log2(cv) ))
+    fitted =  minimize(fun, x0, args=(mu,cv), method='Nelder-Mead')
+    params = fitted.x
+    fitted_fun = lambda mu: mu**(-params[0]) + params[1]
+
+    score = log2(cv) - log2(fitted_fun(mu))
+
+    return ix_genes[argsort(score)[::-1]][:thrs]
 
 def usage_quick():
 
-    message ='''usage: backSPIN [-hbv] [-i inputfile] [-o outputfolder] [-d int] [-t int] [-s float] [-T int] [-S float] [-g int] [-c int] [-k float] [-r float]
+    message ='''usage: backSPIN [-hbv] [-i inputfile] [-o outputfolder] [-d int] [-f int] [-t int] [-s float] [-T int] [-S float] [-g int] [-c int] [-k float] [-r float]
     manual: backSPIN -h
     '''
     print message
@@ -518,6 +549,8 @@ def usage():
        -t [int]
               Number of the iterations used in the preparatory SPIN.
               Defaults to 10
+       -f [int]   
+              Feature selection is performed before backSPIN. Argument controls how many genes are seleceted.
        -s [float]
               Controls the decrease rate of the wid parameter used in the preparatory SPIN.
               Smaller values will increase the number of SPIN iterations and result in higher 
@@ -546,12 +579,13 @@ def usage():
               If the difference between the average expression of two groups is lower than threshold the algorythm 
               uses higly correlated gens to assign the gene to one of the two groups
               Defaults to 0.2
-       -b [[axisvalue]]
+       -b [axisvalue]
               Run normal SPIN instead of backSPIN.
               Normal spin accepts the parameters -T -S
-              optionally one can pass an axis value 0 to only sort genes (rows), 1 to only sort cells (columns)
+              An axis value 0 to only sort genes (rows), 1 to only sort cells (columns), 2 for both
+              must be passed
        -v  
-              Verbose. Print extra details of what is happening to the stdoutput 
+              Verbose. Print  to the stdoutput extra details of what is happening
 
     '''
 
@@ -565,6 +599,8 @@ if __name__ == '__main__':
     input_path = None
     outputfolder_path = None
     numLevels=2 # -d
+    feature_fit = False # -f
+    feature_genes = 2000
     first_run_iters=10 # -t
     first_run_step=0.1 # -s
     runs_iters=8 # -T
@@ -577,7 +613,7 @@ if __name__ == '__main__':
     normal_spin_axis = 'both'
     verbose=False # -v
 
-    optlist, args = getopt.getopt(sys.argv[1:], "hvi:o:d:t:s:T:S:g:c:k:r:b:", ["help", "input=","output="])
+    optlist, args = getopt.gnu_getopt(sys.argv[1:], "hvi:o:f:d:t:s:T:S:g:c:k:r:b:", ["help", "input=","output="])
 
     if optlist== [] and args == []:
         usage_quick()
@@ -595,6 +631,10 @@ if __name__ == '__main__':
                 'Output folder %s was not found' % os.path.abspath(a)
         elif opt == '-d':
             numLevels = int(a)
+        elif opt == '-f':
+            feature_fit = True
+            if a != '':
+                feature_genes = int(a)
         elif opt == '-t':
             first_run_iters = int(a)
         elif opt == '-s':
@@ -615,7 +655,8 @@ if __name__ == '__main__':
             verbose = True
         elif opt == '-b':
             normal_spin = True
-            normal_spin_axis = a
+            if a != '':
+                normal_spin_axis = a
         else:
             assert False, "%s option is not supported" % opt
 
@@ -632,15 +673,29 @@ if __name__ == '__main__':
             print 'Loading file.'
         input_cef = CEF_obj()
         input_cef.readCEF(input_path)
+
         data = array(input_cef.matrix)
+
+        if feature_fit:
+            if verbose:
+                print "Performing feature selection"
+                ix_features = feature_selection(data, feature_genes, verbose=verbose)
+                print "Selected %i genes" % len(ix_features)
+                data = data[ix_features, :]
+                input_cef.matrix = data.tolist()
+                input_cef.row_attr_values = atleast_2d( array( input_cef.row_attr_values ))[:,ix_features].tolist()
+                input_cef.update()
+        
         data = log2(data+1)
         data = data - data.mean(1)[:,newaxis]
         if data.shape[0] <= 3 and data.shape[1] <= 3:
             print 'Inputfile is not correctly formatted.\n'
             sys.exit()
-    except:
+    except Exception, err:
+        import traceback
+        print traceback.format_exc()
         print 'Error occurred in parsing the input file.'
-        print 'Plase check that your input file is a correctly formatted tab separated file.\n'
+        print 'Plase check that your input file is a correctly formatted cef file.\n'
         sys.exit()
 
     if normal_spin == False:
@@ -650,6 +705,7 @@ if __name__ == '__main__':
         print 'Output files will be saved in:\n%s\n' % outfiles_path
         print 'numLevels: %i\nfirst_run_iters: %i\nfirst_run_step: %.3f\nruns_iters: %i\nruns_step: %.3f\nsplit_limit_g: %i\nsplit_limit_c: %i\nstop_const: %.3f\nlow_thrs: %.3f\n' % (numLevels, first_run_iters, first_run_step, runs_iters,\
             runs_step, split_limit_g, split_limit_c, stop_const, low_thrs)
+
 
         results = backSPIN(data, numLevels, first_run_iters, first_run_step, runs_iters, runs_step,\
             split_limit_g, split_limit_c, stop_const, low_thrs, verbose)
@@ -667,9 +723,9 @@ if __name__ == '__main__':
             output_cef.add_row_attr(r_name, array(r_val)[results.genes_order])
 
         for level, groups in enumerate( results.genes_gr_level.T ):
-            output_cef.add_row_attr('Groups_lvl%i' % level, [int(el) for el in groups])
+            output_cef.add_row_attr('Level_%i_group' % level, [int(el) for el in groups])
         for level, groups in enumerate( results.cells_gr_level.T ):
-            output_cef.add_col_attr('Groups_lvl%i' % level, [int(el) for el in groups])
+            output_cef.add_col_attr('Level_%i_group' % level, [int(el) for el in groups])
 
         output_cef.set_matrix(array(input_cef.matrix)[results.genes_order,:][:,results.cells_order])
 
@@ -696,11 +752,11 @@ if __name__ == '__main__':
             for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
                 output_cef.add_row_attr(r_name, array(r_val)[results[0]])
 
-        if normal_spin_axis == 0:
+        if normal_spin_axis == '0':
             for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
                 output_cef.add_row_attr(r_name, array(r_val)[results])
 
-        if normal_spin_axis == 1:
+        if normal_spin_axis == '1':
             for c_name, c_val in zip( input_cef.col_attr_names, input_cef.col_attr_values):
                 output_cef.add_col_attr(c_name, array(c_val)[results])
 
