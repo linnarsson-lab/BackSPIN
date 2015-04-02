@@ -21,17 +21,19 @@ BackSPIN takes input in CEF format and produces an annotated CEF file as output.
        --input=[inputfile]
               Path of the tab delimited file.
               Rows should be genes and columns single cells/samples
-              
+
        -o [outputfolder]
        --output=[outputfolder]
-              The name of the folder where the output will be written (all the output will be 
-              enclosed in a folder named runout_ddmmyyhhmmss)
-              
+              The name of the folder where the output will be written (output will be a 
+              file named results_ddMMyyhhmmss.cef)
+
        -d [int]
               Depth/Number of levels: The number of nested splits that will be tried by the algorythm
        -t [int]
               Number of the iterations used in the preparatory SPIN.
               Defaults to 10
+       -f [int]   
+              Feature selection is performed before backSPIN. Argument controls how many genes are seleceted.
        -s [float]
               Controls the decrease rate of the wid parameter used in the preparatory SPIN.
               Smaller values will increase the number of SPIN iterations and result in higher 
@@ -57,13 +59,14 @@ BackSPIN takes input in CEF format and produces an annotated CEF file as output.
               Minimum score that a breaking point has to reach to be suitable for splitting.
               Defaults to 1.15
        -r [float]
-              Mean Threshold for a gene to be considered low.
+              If the difference between the average expression of two groups is lower than threshold the algorythm 
+              uses higly correlated gens to assign the gene to one of the two groups
               Defaults to 0.2
-       -b [[axisvalue]]
+       -b [axisvalue]
               Run normal SPIN instead of backSPIN.
               Normal spin accepts the parameters -T -S
-              optionally one can pass an axis value 0 to only sort genes (rows), 1 to only sort cells (columns)
+              An axis value 0 to only sort genes (rows), 1 to only sort cells (columns) or 'both' for both
+              must be passed
        -v  
-              Verbose. Print extra details of what is happening to the stdoutput 
-
+              Verbose. Print  to the stdoutput extra details of what is happening
 
