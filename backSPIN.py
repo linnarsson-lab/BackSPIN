@@ -306,8 +306,12 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
             # If we are not below the splitting limit for both genes and cells DO:
             if (len(g_settmp)>split_limit_g) & (len(c_settmp)>split_limit_c): 
                 # Split and SPINsort the two halves
-                divided = _divide_to_2and_resort(datatmp, wid=runs_step, iters_spin=runs_iters,\
-                    stop_const=stop_const, low_thrs=low_thrs, verbose=verbose)
+                if i == numLevels-1:
+                    divided = _divide_to_2and_resort(datatmp, wid=runs_step, iters_spin=runs_iters,\
+                        stop_const=stop_const, low_thrs=low_thrs, sort_genes=True, verbose=verbose)
+                else:
+                    divided = _divide_to_2and_resort(datatmp, wid=runs_step, iters_spin=runs_iters,\
+                        stop_const=stop_const, low_thrs=low_thrs, sort_genes=False,verbose=verbose)
                 # _divide_to_2and_resort retruns an empty array in gr2 if the splitting condition was not satisfied
                 if divided:
                     sorted_data_resort1, genes_resort1, cells_resort1,\
@@ -362,7 +366,7 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
     
     
 
-def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, low_thrs=0.2 ,verbose=False):
+def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, low_thrs=0.2 , sort_genes=True, verbose=False):
     '''Core function of backSPIN: split the datamatrix in two and resort the two halves
 
     Parameters
@@ -390,9 +394,14 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
     N = Rcells.shape[0]
     score = zeros(N)
     for i in range(2,N-2):
-        tmp1 = Rcells[:i,:i]
-        tmp2 = Rcells[i:,i:]
-        score[i] = (sum(tmp1)+sum(tmp2)) / float(i**2 + (N-i)**2)
+        if i == 2:
+            tmp1 = sum( Rcells[:i,:i] )
+            tmp2 = sum( Rcells[i:,i:] )
+            score[i] = (tmp1+tmp2) / float(i**2 + (N-i)**2)
+        else:
+            tmp1 += sum(Rcells[i-1,:i]) + sum(Rcells[:i-1,i-1]);
+            tmp2 -= sum(Rcells[i-1:,i-1]) + sum(Rcells[i-1,i:]);
+            score[i] = (tmp1+tmp2) / float(i**2 + (N-i)**2)
     
     breakp1 = argmax(score)
     score1 = Rcells[:breakp1,:breakp1]
@@ -450,7 +459,11 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         datagr1 = datagr1 - datagr1.mean(1)[:,newaxis]
         # Resort group1
         if min( datagr1.shape ) > 1:
-            genesorder1,cellorder1 = SPIN(datagr1, widlist=wid, iters=iters_spin, axis='both', verbose=verbose)
+            if sort_genes:
+                genesorder1,cellorder1 = SPIN(datagr1, widlist=wid, iters=iters_spin, axis='both', verbose=verbose)
+            else:
+                cellorder1 = SPIN(datagr1, widlist=wid, iters=iters_spin, axis=1, verbose=verbose)
+                genesorder1 = arange(datagr1.shape[0])
         elif len(genesgr1) == 1:
             genesorder1 = 0
             cellorder1 = argsort( datagr1[0,:] )
@@ -464,7 +477,11 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         datagr2 = datagr2 - datagr2.mean(1)[:,newaxis]
         # Resort group2
         if min( datagr2.shape )>1:
-            genesorder2, cellorder2 = SPIN(datagr2, widlist=wid, iters=iters_spin, axis='both',verbose=verbose)
+            if sort_genes:
+                genesorder2, cellorder2 = SPIN(datagr2, widlist=wid, iters=iters_spin, axis='both',verbose=verbose)
+            else:
+                cellorder2 = SPIN(datagr2, widlist=wid, iters=iters_spin, axis=1,verbose=verbose)
+                genesorder2 = arange(datagr2.shape[0])
         elif len(genesgr2) == 1:
             genesorder2 = 0
             cellorder2 = argsort(datagr2[0,:])
@@ -536,8 +553,10 @@ def usage():
 
        -i [inputfile]
        --input=[inputfile]
-              Path of the tab delimited file.
-              Rows should be genes and columns single cells/samples
+              Path of the cef formatted tab delimited file.
+              Rows should be genes and columns single cells/samples.
+              For further information on the cef format visit:
+              https://github.com/linnarsson-lab/ceftools
 
        -o [outputfolder]
        --output=[outputfolder]
@@ -577,7 +596,7 @@ def usage():
               Defaults to 1.15
        -r [float]
               If the difference between the average expression of two groups is lower than threshold the algorythm 
-              uses higly correlated gens to assign the gene to one of the two groups
+              uses higly correlated genes to assign the gene to one of the two groups
               Defaults to 0.2
        -b [axisvalue]
               Run normal SPIN instead of backSPIN.
