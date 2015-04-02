@@ -582,7 +582,7 @@ def usage():
        -b [axisvalue]
               Run normal SPIN instead of backSPIN.
               Normal spin accepts the parameters -T -S
-              An axis value 0 to only sort genes (rows), 1 to only sort cells (columns), 2 for both
+              An axis value 0 to only sort genes (rows), 1 to only sort cells (columns) or 'both' for both
               must be passed
        -v  
               Verbose. Print  to the stdoutput extra details of what is happening
