@@ -76,17 +76,34 @@ Run the following from your terminal (here using Mac binary release; for other p
 
        backspin -i oligos.cef -o oligos_clustered.cef -f 500 -v -d 4
 
-Three options are required:
+Three options are mandatory:
 
 * The input file must be given: `-i oligos.cef`
 * The ouput file must be named: `-o oligos_clustered.cef`
 * The depth of clustering must be specified: `-d 4`
 
-The depth of clustering is the number of levels of binary splits that will be attempted. `-d 4` indicates that BackSPIN will attempt four levels of splits, e.g. a maximum of 2<sup>4</sup> = 16 clusters will be created. The actual number of clusters may be smaller than this, because BackSPIN has a stopping rule where it will refuse to split the data further.
+The **depth of clustering** `-d` is the number of levels of binary splits that will be attempted. `-d 4` indicates that BackSPIN will attempt four levels of splits, e.g. a maximum of 2<sup>4</sup> = 16 clusters will be created. The actual number of clusters may be smaller than this, because BackSPIN has a stopping rule where it will refuse to split the data further.
 
-The feature selection option (`-f 500`) is not mandatory, but in practice is almost always used. This option will select a number of features (i.e. genes) based on *expected noise*. That is, genes will be ranked by how large their CV (standard deviation divided by the mean) is, compared to other genes that have similar mean expression. The noise calculation is based on a curve fit to the CV-vs-mean plot on a log-log scale (as described in Zeisel et al., Science 2015 and in Islam et al. Nature Methods 2014). `-f 500` will select the 500 noisiest genes according to this ranking. 
+The **feature selection** option `-f` is not mandatory, but in practice is almost always used. This option will select a number of features (i.e. genes) based on *expected noise*. That is, genes will be ranked by how large their CV (standard deviation divided by the mean) is, compared to other genes that have similar mean expression (as described in Zeisel et al., Science 2015 and in Islam et al. Nature Methods 2014). `-f 500` will select the 500 most variable genes according to this ranking. BackSPIN runs take O(n<sup>3</sup>), so selecting more genes will quickly lead to long runs. 
 
-There is no objective criterion to help decide how many genes to select for clustering. BackSPIN runs take O(n<sup>3</sup>), so selecting more genes will quickly lead to long runs. In published work, we have used 5000 genes. 
+The `-v` option makes BackSPIN print a verbose description of what's going on.
+
+### The output
+
+The result of BackSPIN clustering is another CEF file, which contains the same data as the input file but reorganized, as follows. First, only genes that were selected by the `-f` option are included. All other genes are removed. Second, rows and columns are sorted in SPIN order and grouped by BackSPIN cluster. Third, several row and column attributes are added, that indicate the cluster number of each gene (row) and cell (column).
+
+       Level_0_group (always 0)
+       Level_1_group (0 - 1) 
+       Level_2_group (0 - 3)
+       Level_3_group (0 - 7)
+       Level_4_group (0 - 15)
+
+Because BackSPIN is a biclustering method, each cluster contains both a set of genes (rows) and a set of cells (columns). At each level, the set of rows and columns that have the same cluster ID form a rectangle in the main matrix. These rectangles are non-overlapping, and every row and every column belong to exactly one cluster at each level.
+
+You can use ceftools to manipulate the output. For example, to extract the genes that belong to cluster 0 at level 2, issue the following command:
+
+       < oligos_clustered.cef cef select --where "Level_2_group=0"
+
 
 
 
