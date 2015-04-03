@@ -6,9 +6,7 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 ## Getting started
 
-**Note: BackSPIN is currently under development and there is no production-ready version.**
-
-You can download an alpha version for Mac OS X on the [release page](https://github.com/linnarsson-lab/BackSPIN/releases).
+Download a beta release for Mac OS X on the [release page](https://github.com/linnarsson-lab/BackSPIN/releases).
 
 For other platforms, download the source and run from Python. BackSPIN requires [numpy](http://www.numpy.org).
 
@@ -69,4 +67,32 @@ BackSPIN takes input in CEF format and produces an annotated CEF file as output.
               must be passed
        -v  
               Verbose. Print  to the stdoutput extra details of what is happening
+
+## Tutorial
+
+This tutorial assumes that you have installed BackSPIN and downloaded the sample dataset `oligos.cef` (oligodendrocytes from Zeisel et al., Science 2015) from the [release page](https://github.com/linnarsson-lab/BackSPIN/releases).
+
+Run the following from your terminal (here using Mac binary release; for other platforms, invoke backSPIN.py):
+
+       backspin -i oligos.cef -o oligos_clustered.cef -f 500 -v -d 4
+
+Three options are required:
+
+* The input file must be given: `-i oligos.cef`
+* The ouput file must be named: `-o oligos_clustered.cef`
+* The depth of clustering must be specified: `-d 4`
+
+The depth of clustering is the number of levels of binary splits that will be attempted. `-d 4` indicates that BackSPIN will attempt four levels of splits, e.g. a maximum of 2<sup>4</sup> = 16 clusters will be created. The actual number of clusters may be smaller than this, because BackSPIN has a stopping rule where it will refuse to split the data further.
+
+The feature selection option (`-f 500`) is not mandatory, but in practice is almost always used. This option will select a number of features (i.e. genes) based on *expected noise*. That is, genes will be ranked by how large their CV (standard deviation divided by the mean) is, compared to other genes that have similar mean expression. The noise calculation is based on a curve fit to the CV-vs-mean plot on a log-log scale (as described in Zeisel et al., Science 2015 and in Islam et al. Nature Methods 2014). `-f 500` will select the 500 noisiest genes according to this ranking. 
+
+There is no objective criterion to help decide how many genes to select for clustering. BackSPIN runs take O(n<sup>3</sup>), so selecting more genes will quickly lead to long runs. In published work, we have used 5000 genes. 
+
+
+
+
+
+
+
+
 
