@@ -558,18 +558,18 @@ def usage():
               For further information on the cef format visit:
               https://github.com/linnarsson-lab/ceftools
 
-       -o [outputfolder]
-       --output=[outputfolder]
-              The name of the folder where the output will be written (output will be a 
-              file named results_ddMMyyhhmmss.cef)
+       -o [outputfile]
+       --output=[outputfile]
+              The name of the file to which the output will be written
 
        -d [int]
-              Depth/Number of levels: The number of nested splits that will be tried by the algorythm
+              Depth/Number of levels: The number of nested splits that will be tried by the algorithm
        -t [int]
               Number of the iterations used in the preparatory SPIN.
               Defaults to 10
        -f [int]   
-              Feature selection is performed before backSPIN. Argument controls how many genes are seleceted.
+              Feature selection is performed before BackSPIN. Argument controls how many genes are seleceted.
+              Selection is based on a curver fit to the CV-vs-mean plot.
        -s [float]
               Controls the decrease rate of the wid parameter used in the preparatory SPIN.
               Smaller values will increase the number of SPIN iterations and result in higher 
@@ -616,7 +616,7 @@ if __name__ == '__main__':
     print 
     #defaults arguments
     input_path = None
-    outputfolder_path = None
+    outfiles_path = None
     numLevels=2 # -d
     feature_fit = False # -f
     feature_genes = 2000
@@ -644,10 +644,7 @@ if __name__ == '__main__':
         elif opt in ('-i', '--input'):
             input_path = a
         elif opt in ("-o", "--output"):
-            if os.path.exists(a):
-                outputfolder_path = a
-            else:
-                'Output folder %s was not found' % os.path.abspath(a)
+            outfiles_path = a
         elif opt == '-d':
             numLevels = int(a)
         elif opt == '-f':
@@ -682,10 +679,9 @@ if __name__ == '__main__':
     if input_path == None:
         print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.txt)\n'
         sys.exit()
-    if outputfolder_path == None:
-        outputfolder_path = os.getcwd()
-    
-    outfiles_path = os.path.join( outputfolder_path, 'results_%s.cef' % time.strftime('%d%m%y%H%M%S') )
+    if outfiles_path == None:
+        print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.txt)\n'
+        sys.exit()
 
     try:
         if verbose:
