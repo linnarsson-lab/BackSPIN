@@ -677,10 +677,10 @@ if __name__ == '__main__':
             assert False, "%s option is not supported" % opt
 
     if input_path == None:
-        print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.txt)\n'
+        print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.cef)\n'
         sys.exit()
     if outfiles_path == None:
-        print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.txt)\n'
+        print 'No output file was provided.\nYou need to specify an output file\n(e.g. backSPIN -o path/to/your/file/bar.cef)\n'
         sys.exit()
 
     try:
