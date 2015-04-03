@@ -9,6 +9,11 @@ import time
 #import pandas as pd
 from Cef_tools import CEF_obj
 
+#
+# Building using pyinstaller:
+# pyinstaller -F backSPIN.py -n backspin-mac-64-bit
+#
+
 
 def _calc_weights_matrix(mat_size, wid):
     '''Calculate Weight Matrix
@@ -569,21 +574,21 @@ def usage():
               Defaults to 10
        -f [int]   
               Feature selection is performed before BackSPIN. Argument controls how many genes are seleceted.
-              Selection is based on a curver fit to the CV-vs-mean plot.
+              Selection is based on expected noise (a curve fit to the CV-vs-mean plot).
        -s [float]
-              Controls the decrease rate of the wid parameter used in the preparatory SPIN.
+              Controls the decrease rate of the width parameter used in the preparatory SPIN.
               Smaller values will increase the number of SPIN iterations and result in higher 
               precision in the first step but longer execution time.
               Defaults to 0.05
        -T [int]
-              Number of the iterations used for every wid parameter.
+              Number of the iterations used for every width parameter.
               Does not apply on the first run (use -t instead)
               Defaults to 8
        -S [float]
-              Controls the decrease rate of the wid parameter.
+              Controls the decrease rate of the width parameter.
               Smaller values will increase the number of SPIN iterations and result in higher 
               precision but longer execution time.
-              Does not apply on the first run (use -s isntead)
+              Does not apply on the first run (use -s instead)
               Defaults to 0.25
        -g [int]
               Minimal number of genes that a group must contain for splitting to be allowed.
@@ -704,20 +709,20 @@ if __name__ == '__main__':
         data = log2(data+1)
         data = data - data.mean(1)[:,newaxis]
         if data.shape[0] <= 3 and data.shape[1] <= 3:
-            print 'Inputfile is not correctly formatted.\n'
+            print 'Input file is not correctly formatted.\n'
             sys.exit()
     except Exception, err:
         import traceback
         print traceback.format_exc()
         print 'Error occurred in parsing the input file.'
-        print 'Plase check that your input file is a correctly formatted cef file.\n'
+        print 'Please check that your input file is a correctly formatted cef file.\n'
         sys.exit()
 
     if normal_spin == False:
 
         print 'backSPIN started\n----------------\n'
-        print 'Input file seleceted:\n%s\n' % input_path
-        print 'Output files will be saved in:\n%s\n' % outfiles_path
+        print 'Input file:\n%s\n' % input_path
+        print 'Output file:\n%s\n' % outfiles_path
         print 'numLevels: %i\nfirst_run_iters: %i\nfirst_run_step: %.3f\nruns_iters: %i\nruns_step: %.3f\nsplit_limit_g: %i\nsplit_limit_c: %i\nstop_const: %.3f\nlow_thrs: %.3f\n' % (numLevels, first_run_iters, first_run_step, runs_iters,\
             runs_step, split_limit_g, split_limit_c, stop_const, low_thrs)
 
@@ -726,7 +731,7 @@ if __name__ == '__main__':
             split_limit_g, split_limit_c, stop_const, low_thrs, verbose)
 
         sys.stdout.flush()
-        print '\nWriting output files.\n'
+        print '\nWriting output.\n'
 
         output_cef = CEF_obj()
 
@@ -749,12 +754,12 @@ if __name__ == '__main__':
     else:
 
         print 'normal SPIN started\n----------------\n'
-        print 'Input file seleceted:\n%s\n' % input_path
-        print 'Output files will be saved in:\n%s\n' % outfiles_path
+        print 'Input file:\n%s\n' % input_path
+        print 'Output file:\n%s\n' % outfiles_path
 
         results = SPIN(dt, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
 
-        print '\nWriting output files.\n'
+        print '\nWriting output.\n'
 
         output_cef = CEF_obj()
 
