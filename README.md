@@ -106,6 +106,11 @@ You can use ceftools to manipulate the output. For example, to extract the genes
 
        < oligos_clustered.cef cef select --where "Level_2_group=0"
 
+An easy way to see the clustering result is to browse the file interactively:
+
+       < oligos_clustered.cef cef view
+
+
 
 
 
