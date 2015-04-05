@@ -17,35 +17,37 @@ BackSPIN takes input in CEF format and produces an annotated CEF file as output.
 
        -i [inputfile]
        --input=[inputfile]
-              Path of the tab delimited file.
-              Rows should be genes and columns single cells/samples
+              Path of the cef formatted tab delimited file.
+              Rows should be genes and columns single cells/samples.
+              For further information on the cef format visit:
+              https://github.com/linnarsson-lab/ceftools
 
-       -o [outputfolder]
-       --output=[outputfolder]
-              The name of the folder where the output will be written (output will be a 
-              file named results_ddMMyyhhmmss.cef)
+       -o [outputfile]
+       --output=[outputfile]
+              The name of the file to which the output will be written
 
        -d [int]
-              Depth/Number of levels: The number of nested splits that will be tried by the algorythm
+              Depth/Number of levels: The number of nested splits that will be tried by the algorithm
        -t [int]
               Number of the iterations used in the preparatory SPIN.
               Defaults to 10
        -f [int]   
-              Feature selection is performed before backSPIN. Argument controls how many genes are seleceted.
+              Feature selection is performed before BackSPIN. Argument controls how many genes are seleceted.
+              Selection is based on expected noise (a curve fit to the CV-vs-mean plot).
        -s [float]
-              Controls the decrease rate of the wid parameter used in the preparatory SPIN.
+              Controls the decrease rate of the width parameter used in the preparatory SPIN.
               Smaller values will increase the number of SPIN iterations and result in higher 
               precision in the first step but longer execution time.
               Defaults to 0.05
        -T [int]
-              Number of the iterations used for every wid parameter.
+              Number of the iterations used for every width parameter.
               Does not apply on the first run (use -t instead)
               Defaults to 8
        -S [float]
-              Controls the decrease rate of the wid parameter.
+              Controls the decrease rate of the width parameter.
               Smaller values will increase the number of SPIN iterations and result in higher 
               precision but longer execution time.
-              Does not apply on the first run (use -s isntead)
+              Does not apply on the first run (use -s instead)
               Defaults to 0.25
        -g [int]
               Minimal number of genes that a group must contain for splitting to be allowed.
@@ -58,7 +60,7 @@ BackSPIN takes input in CEF format and produces an annotated CEF file as output.
               Defaults to 1.15
        -r [float]
               If the difference between the average expression of two groups is lower than threshold the algorythm 
-              uses higly correlated gens to assign the gene to one of the two groups
+              uses higly correlated genes to assign the gene to one of the two groups
               Defaults to 0.2
        -b [axisvalue]
               Run normal SPIN instead of backSPIN.
