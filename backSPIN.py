@@ -14,7 +14,9 @@ from Cef_tools import CEF_obj
 # pyinstaller -F backSPIN.py -n backspin-mac-64-bit
 #
 
-
+class Results:
+        pass
+        
 def _calc_weights_matrix(mat_size, wid):
     '''Calculate Weight Matrix
     Parameters
@@ -260,22 +262,20 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
     -------
     results: Result object
         The results object contain the following attributes
-        dataout_sorted:
-
-        genes_order:
-
-        cells_order:
-
-        genes_gr_level:
-
+        genes_order: 1-D array
+            indexes (a permutation) sorting the genes 
+        cells_order: 1-D array
+            indexes (a permutation) sorting the cells 
+        genes_gr_level: 2-D array
+            for each depth level contains the cluster indexes for each gene
         cells_gr_level:
-
+            for each depth level contains the cluster indexes for each cell
         cells_gr_level_sc:
-
+            score of the splitting
         genes_bor_level:
-
+            the border index between gene clusters
         cells_bor_level:
-
+            the border index between cell clusters
 
     Notes
     -----
@@ -355,9 +355,6 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
 
     #dataout_sorted = data[ ix_(genes_order,cells_order) ]
 
-    class Results:
-        pass
-
     results = Results()
     results.genes_order = genes_order
     results.cells_order = cells_order
@@ -411,12 +408,12 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
     breakp1 = argmax(score)
     score1 = Rcells[:breakp1,:breakp1]
     score1 = triu(score1)
-    score1 = mean( score1[score1 != 0] ) # WHY ???????????????????????????????
+    score1 = mean( score1[score1 != 0] )
     score2 = Rcells[breakp1:,breakp1:]
     score2 = triu(score2)
-    score2 = mean( score2[score2 != 0] ) # WHY ???????????????????????????????
+    score2 = mean( score2[score2 != 0] )
     avg_tot = triu(Rcells)
-    avg_tot = mean( avg_tot[avg_tot != 0] ) # WHY ???????????????????????????????
+    avg_tot = mean( avg_tot[avg_tot != 0] )
 
     # If it is convenient to break
     if (max([score1,score2])/avg_tot) > stop_const:
