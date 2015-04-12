@@ -1,22 +1,49 @@
 #!/usr/bin/env python
-from __future__ import division
-#from matplotlib.pylab import *
-from numpy import *
-import getopt
-import sys
-import os
-import time
-#import pandas as pd
-from Cef_tools import CEF_obj
 
+# Copyright (c) 2015, Amit Zeisel, Gioele La Manno and Sten Linnarsson
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# This .py file can be used as a library or a command-line version of BackSPIN, 
+# This version of BackSPIN was implemented by Gioele La Manno.
+# The BackSPIN biclustering algorithm was developed by Amit Zeisel and is described
+# in Zeisel et al. Cell types in the mouse cortex and hippocampus revealed by 
+# single-cell RNA-seq Science 2015 (PMID: 25700174, doi: 10.1126/science.aaa1934). 
 #
 # Building using pyinstaller:
 # pyinstaller -F backSPIN.py -n backspin-mac-64-bit
 #
 
+from __future__ import division
+from numpy import *
+import getopt
+import sys
+import os
+from Cef_tools import CEF_obj
+
 class Results:
         pass
-        
+
 def _calc_weights_matrix(mat_size, wid):
     '''Calculate Weight Matrix
     Parameters
@@ -337,12 +364,16 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
                 else:
                     # The split is not convenient, keep everithing the same
                     genes_gr_level[g_settmp,i+1] = k
+                    # if it is the deepest level: perform gene sorting
+                    if i == numLevels-1:
+                        genes_resort1 = SPIN(datagr1, widlist=runs_step, iters=iters_spin, axis=0, verbose=verbose)
+                        genes_order[g_settmp] = genes_order[g_settmp[genes_resort1]]
                     cells_gr_level[c_settmp,i+1] = k
                     cells_gr_level_sc[c_settmp,i+1] = cells_gr_level_sc[c_settmp,i]
                     # Augment of 1 becouse no new group was generated
                     k = k+1
             else:
-                # The split is not convenient, keep everithing the same
+                # Below the splitting limit: the split is not convenient, keep everithing the same
                 genes_gr_level[g_settmp,i+1] = k
                 cells_gr_level[c_settmp,i+1] = k
                 cells_gr_level_sc[c_settmp,i+1] = cells_gr_level_sc[c_settmp,i]
@@ -503,7 +534,7 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
 
     else:
         if verbose:
-            print 'No splitting score was : %.4f' % (max([score1,score2])/avg_tot)
+            print 'Low splitting score was : %.4f' % (max([score1,score2])/avg_tot)
         return False
 
 def feature_selection(data,thrs, verbose=False):
@@ -576,7 +607,7 @@ def usage():
               Controls the decrease rate of the width parameter used in the preparatory SPIN.
               Smaller values will increase the number of SPIN iterations and result in higher 
               precision in the first step but longer execution time.
-              Defaults to 0.05
+              Defaults to 0.1
        -T [int]
               Number of the iterations used for every width parameter.
               Does not apply on the first run (use -t instead)
@@ -586,7 +617,7 @@ def usage():
               Smaller values will increase the number of SPIN iterations and result in higher 
               precision but longer execution time.
               Does not apply on the first run (use -s instead)
-              Defaults to 0.25
+              Defaults to 0.3
        -g [int]
               Minimal number of genes that a group must contain for splitting to be allowed.
               Defaults to 2
