@@ -366,8 +366,9 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
                     genes_gr_level[g_settmp,i+1] = k
                     # if it is the deepest level: perform gene sorting
                     if i == numLevels-1:
-                        genes_resort1 = SPIN(datagr1, widlist=runs_step, iters=iters_spin, axis=0, verbose=verbose)
-                        genes_order[g_settmp] = genes_order[g_settmp[genes_resort1]]
+                        if (datatmp.shape[0] > 2 )and (datatmp.shape[1] > 2):
+                            genes_resort1 = SPIN(datatmp, widlist=runs_step, iters=runs_iters, axis=0, verbose=verbose)
+                            genes_order[g_settmp] = genes_order[g_settmp[genes_resort1]]
                     cells_gr_level[c_settmp,i+1] = k
                     cells_gr_level_sc[c_settmp,i+1] = cells_gr_level_sc[c_settmp,i]
                     # Augment of 1 becouse no new group was generated
@@ -741,6 +742,7 @@ if __name__ == '__main__':
             sys.exit()
     except Exception, err:
         import traceback
+        print 'There was an error'
         print traceback.format_exc()
         print 'Error occurred in parsing the input file.'
         print 'Please check that your input file is a correctly formatted cef file.\n'
