@@ -538,6 +538,101 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
             print 'Low splitting score was : %.4f' % (max([score1,score2])/avg_tot)
         return False
 
+
+def fit_CV(mu, cv, fit_method='SVR', svr_gamma=0.06, x0=[0.5,0.5], verbose=False):
+    '''Fits a noise model (CV vs mean)
+    Parameters
+    ----------
+    mu: 1-D array
+        mean of the genes (raw counts)
+    cv: 1-D array
+        coefficient of variation for each gene
+    fit_method: string
+        allowed: 'SVR', 'Exp', 'binSVR', 'binExp' 
+        default: 'SVR'(requires scikit learn)
+        SVR: uses Support vector regression to fit the noise model
+        Exp: Parametric fit to cv = mu^(-a) + b
+        bin: before fitting the distribution of mean is normalized to be
+             uniform by downsampling and resampling.
+    Returns
+    -------
+    score: 1-D array
+        Score is the relative position with respect of the fitted curve
+    mu_linspace: 1-D array
+        x coordiantes to plot (min(log2(mu)) -> max(log2(mu)))
+    cv_fit: 1-D array
+        y=f(x) coordinates to plot 
+    pars: tuple or None
+    
+    '''
+    log2_m = log2(mu)
+    log2_cv = log2(cv)
+    
+    if len(mu)>1000 and 'bin' in fit_method:
+        #histogram with 30 bins
+        n,xi = histogram(log2_m,30)
+        med_n = percentile(n,50)
+        for i in range(0,len(n)):
+            # index of genes within the ith bin
+            ind = where( (log2_m >= xi[i]) & (log2_m < xi[i+1]) )[0]
+            if len(ind)>med_n:
+                #Downsample if count is more than median
+                ind = ind[random.permutation(len(ind))]
+                ind = ind[:len(ind)-med_n]
+                mask = ones(len(log2_m), dtype=bool)
+                mask[ind] = False
+                log2_m = log2_m[mask]
+                log2_cv = log2_cv[mask]
+            elif (around(med_n/len(ind))>1) and (len(ind)>5):
+                #Duplicate if count is less than median
+                log2_m = r_[ log2_m, tile(log2_m[ind], around(med_n/len(ind))-1) ]
+                log2_cv = r_[ log2_cv, tile(log2_cv[ind], around(med_n/len(ind))-1) ]
+    else:
+        if 'bin' in fit_method:
+            print 'More than 1000 input feature needed for bin correction.'
+        pass
+                
+    if 'SVR' in fit_method:
+        try:
+            from sklearn.svm import SVR
+            if svr_gamma == 'auto':
+                svr_gamma = 1000./len(mu)
+            #Fit the Support Vector Regression
+            clf = SVR(gamma=svr_gamma)
+            clf.fit(log2_m[:,newaxis], log2_cv)
+            fitted_fun = clf.predict
+            score = log2(cv) - fitted_fun(log2(mu)[:,newaxis])
+            params = None
+            #The coordinates of the fitted curve
+            mu_linspace = linspace(min(log2_m),max(log2_m))
+            cv_fit = fitted_fun(mu_linspace[:,newaxis])
+            return score, mu_linspace, cv_fit , params
+            
+        except ImportError:
+            if verbose:
+                print 'SVR fit requires scikit-learn python library. Using exponential instead.'
+            if 'bin' in fit_method:
+                return fit_CV(mu, cv, fit_method='binExp', x0=x0)
+            else:
+                return fit_CV(mu, cv, fit_method='Exp', x0=x0)
+    elif 'Exp' in fit_method:
+        from scipy.optimize import minimize
+        #Define the objective function to fit (least squares)
+        fun = lambda x, log2_m, log2_cv: sum(abs( log2( (2.**log2_m)**(-x[0])+x[1]) - log2_cv ))
+        #Fit using Nelder-Mead algorythm
+        optimization =  minimize(fun, x0, args=(log2_m,log2_cv), method='Nelder-Mead')
+        params = optimization.x
+        #The fitted function
+        fitted_fun = lambda log_mu: log2( (2.**log_mu)**(-params[0]) + params[1])
+        # Score is the relative position with respect of the fitted curve
+        score = log2(cv) - fitted_fun(log2(mu))
+        #The coordinates of the fitted curve
+        mu_linspace = linspace(min(log2_m),max(log2_m))
+        cv_fit = fitted_fun(mu_linspace)
+        return score, mu_linspace, cv_fit , params
+    
+    
+
 def feature_selection(data,thrs, verbose=False):
     try:
         from scipy.optimize import minimize
@@ -546,27 +641,21 @@ def feature_selection(data,thrs, verbose=False):
         return arange(data.shape[0])
     if thrs>= data.shape[0]:
         if verbose:
-            print "Trying to sleect %i features but only %i genes available." %( thrs, data.shape[0])
+            print "Trying to select %i features but only %i genes available." %( thrs, data.shape[0])
             print "Skipping feature selection"
         return arange(data.shape[0])
     ix_genes = arange(data.shape[0])
-    eightperK = int(ceil(8*data.shape[0]/1000.))
-    twoperK = int(ceil(2*data.shape[0]/1000.))
-    # is at least 1 molecule in 0.8% of thecells, is at least 2 molecules in 0.2% of the cells
-    condition = (sum(data>=1, 1)>= eightperK) & (sum(data>=2, 1)>=twoperK) 
+    threeperK = int(ceil(3*data.shape[0]/1000.))
+    zerotwoperK = int(ceil(0.3*data.shape[0]/1000.))
+    # is at least 1 molecule in 0.3% of thecells, is at least 2 molecules in 0.03% of the cells
+    condition = (sum(data>=1, 1)>= threeperK) & (sum(data>=2, 1)>=zerotwoperK) 
     ix_genes = ix_genes[condition]
     
     mu = data[ix_genes,:].mean(1)
     sigma = data[ix_genes,:].std(1, ddof=1)
     cv = sigma/mu
 
-    x0 = [0.5,0.5]
-    fun = lambda x, mu, cv: sum(abs( log2(mu**(-x[0]) +x[1]) - log2(cv) ))
-    fitted =  minimize(fun, x0, args=(mu,cv), method='Nelder-Mead')
-    params = fitted.x
-    fitted_fun = lambda mu: mu**(-params[0]) + params[1]
-
-    score = log2(cv) - log2(fitted_fun(mu))
+    score, mu_linspace, cv_fit , params = fit_CV(mu,cv,fit_method='SVR', verbose=verbose)
 
     return ix_genes[argsort(score)[::-1]][:thrs]
 
@@ -728,12 +817,13 @@ if __name__ == '__main__':
         if feature_fit:
             if verbose:
                 print "Performing feature selection"
-                ix_features = feature_selection(data, feature_genes, verbose=verbose)
+            ix_features = feature_selection(data, feature_genes, verbose=verbose)
+            if verbose:
                 print "Selected %i genes" % len(ix_features)
-                data = data[ix_features, :]
-                input_cef.matrix = data.tolist()
-                input_cef.row_attr_values = atleast_2d( array( input_cef.row_attr_values ))[:,ix_features].tolist()
-                input_cef.update()
+            data = data[ix_features, :]
+            input_cef.matrix = data.tolist()
+            input_cef.row_attr_values = atleast_2d( array( input_cef.row_attr_values ))[:,ix_features].tolist()
+            input_cef.update()
         
         data = log2(data+1)
         data = data - data.mean(1)[:,newaxis]
