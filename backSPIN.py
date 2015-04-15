@@ -778,9 +778,11 @@ if __name__ == '__main__':
             output_cef.add_col_attr('Level_%i_group' % level, [int(el) for el in groups])
 
         output_cef.set_matrix(array(input_cef.matrix)[results.genes_order,:][:,results.cells_order])
-
-        output_cef.writeCEF( outfiles_path )
-
+        if sum(type(i)==float for i in input_cef.matrix[0]) + sum(type(i)==float for i in input_cef.matrix[-1]) == 0:
+            fmt = '%i'
+        else:
+            fmt ='%.6g'
+        output_cef.writeCEF( outfiles_path, matrix_str_fmt=fmt )
     else:
 
         print 'normal SPIN started\n----------------\n'
