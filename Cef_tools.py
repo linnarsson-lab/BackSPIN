@@ -119,11 +119,15 @@ class CEF_obj(object):
 				for n, entry in enumerate( linelist[:self.row_attr] ):
 					self.row_attr_values[n].append( entry )
 				if matrix_dtype == 'auto':
-					if sum('.' in i for i in linelist[self.row_attr+1:]) != 0:
+					if sum(('.' in i) or ('e' in i) for i in linelist[self.row_attr+1:]) != 0:
 						matrix_dtype = float
 					else:
 						matrix_dtype = int
-				self.matrix.append( [matrix_dtype(el) for el in linelist[self.row_attr+1:] ])
+				try:
+					self.matrix.append( [matrix_dtype(el) for el in linelist[self.row_attr+1:] ])
+				except ValueError:
+					print repr(el), ' is unvalid becouse of type ', str(type(el))
+
 
 
 	def writeCEF(self, filepath, matrix_str_fmt = '%i'):
