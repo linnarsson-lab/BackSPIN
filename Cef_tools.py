@@ -126,7 +126,7 @@ class CEF_obj(object):
 				try:
 					self.matrix.append( [matrix_dtype(el) for el in linelist[self.row_attr+1:] ])
 				except ValueError:
-					print repr(el), ' is unvalid becouse of type ', str(type(el))
+					print repr(el), ' is invalid'
 
 
 
