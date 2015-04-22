@@ -462,7 +462,7 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
             # For every difference lower than a threshold 
             for i in range(len(d)): 
                 if d[i] < low_thrs:
-                    IN = Rgenes[i,:] > percentile(Rgenes[i,:], 100 - 100*(20/len(d)))
+                    IN = Rgenes[i,:] > percentile(Rgenes[i,:], 100 - 100*(20./float(len(d))))
                     mean_gr1[i] = sorted_data[ix_(IN,gr1)].sum(0).mean() #the mean of the sum of the columns
                     mean_gr2[i] = sorted_data[ix_(IN,gr2)].sum(0).mean()
                     
@@ -645,8 +645,8 @@ def feature_selection(data,thrs, verbose=False):
             print "Skipping feature selection"
         return arange(data.shape[0])
     ix_genes = arange(data.shape[0])
-    threeperK = int(ceil(3*data.shape[0]/1000.))
-    zerotwoperK = int(ceil(0.3*data.shape[0]/1000.))
+    threeperK = int(ceil(3*data.shape[1]/1000.))
+    zerotwoperK = int(floor(0.3*data.shape[1]/1000.))
     # is at least 1 molecule in 0.3% of thecells, is at least 2 molecules in 0.03% of the cells
     condition = (sum(data>=1, 1)>= threeperK) & (sum(data>=2, 1)>=zerotwoperK) 
     ix_genes = ix_genes[condition]
