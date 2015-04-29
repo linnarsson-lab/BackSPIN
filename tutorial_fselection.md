@@ -2,11 +2,11 @@
 
 In order to achieve successful clustering using BackSPIN, it is crucial to select an informative subset of genes. If you attempt to cluster on too many genes, not only will clustering take a very long time, but it will also be fragmented and potentially misleading. If you select too few genes, you may be missing precisely those that are informative about biologically relevant subclasses of cells in your dataset.
 
-As a rule, we perform *feature selection* (i.e. selecting a relevant subset of genes) by picking those genes that are *more variable than expected by their average expression levels*. To understand what this means, consider the plot below. It shows the CV (standard deviation divided by the mean) versus mean for all genes in the `oligos.cef` dataset. It's obvious that the CV depends on the mean by some slightly nonlinear function, on this log-log scale. 
+As a rule, we perform feature selection (i.e. selecting a relevant subset of genes) by picking those genes that are *more variable than expected by their average expression levels*. To understand what this means, consider the plot below. It shows the CV (standard deviation divided by the mean) versus mean for all genes in the `oligos.cef` dataset. It's obvious that the CV depends on the mean by some slightly nonlinear function, on this log-log scale. 
 
 <img src="cvmean.png" width=400\>
 
-A reasonable fit can often be obtained by fitting `log(CV) = log(mean<sup>k<sub>0</sub></sup> + k<sub>1</sub>)`, shown as the blue curve. For each gene, we can then calculate an offset from this line, which we call `noise`. The larger this value, the noisier the gene is relative to its expression level.
+A reasonable fit can often be obtained by fitting *log(CV) = log(mean<sup>k<sub>0</sub></sup> + k<sub>1</sub>)*, shown as the blue curve. For each gene, we can then calculate an offset from this line, which we call `noise`. The larger this value, the noisier the gene is relative to its expression level.
 
 
 ### Feature selection with BackSPIN
