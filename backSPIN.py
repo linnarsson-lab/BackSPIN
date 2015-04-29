@@ -539,7 +539,7 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         return False
 
 
-def fit_CV(mu, cv, fit_method='SVR', svr_gamma=0.06, x0=[0.5,0.5], verbose=False):
+def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False):
     '''Fits a noise model (CV vs mean)
     Parameters
     ----------
@@ -616,7 +616,6 @@ def fit_CV(mu, cv, fit_method='SVR', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
             else:
                 return fit_CV(mu, cv, fit_method='Exp', x0=x0)
     elif 'Exp' in fit_method:
-        from scipy.optimize import minimize
         #Define the objective function to fit (least squares)
         fun = lambda x, log2_m, log2_cv: sum(abs( log2( (2.**log2_m)**(-x[0])+x[1]) - log2_cv ))
         #Fit using Nelder-Mead algorythm
