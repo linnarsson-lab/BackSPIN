@@ -4,7 +4,7 @@ In order to achieve successful clustering using BackSPIN, it is crucial to selec
 
 As a rule, we perform *feature selection* (i.e. selecting a relevant subset of genes) by picking those genes that are *more variable than expected by their average expression levels*. To understand what this means, consider the plot below. It shows the CV (standard deviation divided by the mean) versus mean for all genes in the `oligos.cef` dataset. It's obvious that the CV depends on the mean by some slightly nonlinear function, on this log-log scale. 
 
-![CV vs mean plot](cvmean.png)
+<img src="cvmean.png" width=400\>
 
 A reasonable fit can often be obtained by fitting `log(CV) = log(mean<sup>k<sub>0</sub></sup> + k<sub>1</sub>)`, shown as the blue curve. For each gene, we can then calculate an offset from this line, which we call `noise`. The larger this value, the noisier the gene is relative to its expression level.
 
