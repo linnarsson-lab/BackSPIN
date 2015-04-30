@@ -616,6 +616,7 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
             else:
                 return fit_CV(mu, cv, fit_method='Exp', x0=x0)
     elif 'Exp' in fit_method:
+        from scipy.optimize import minimize
         #Define the objective function to fit (least squares)
         fun = lambda x, log2_m, log2_cv: sum(abs( log2( (2.**log2_m)**(-x[0])+x[1]) - log2_cv ))
         #Fit using Nelder-Mead algorythm
@@ -633,11 +634,6 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
     
 
 def feature_selection(data,thrs, verbose=False):
-    try:
-        from scipy.optimize import minimize
-    except ImportError:
-        print "WARNING: Feature selection was skipped becouse scipy is required. Install scipy to run feature selection."
-        return arange(data.shape[0])
     if thrs>= data.shape[0]:
         if verbose:
             print "Trying to select %i features but only %i genes available." %( thrs, data.shape[0])
@@ -654,8 +650,12 @@ def feature_selection(data,thrs, verbose=False):
     sigma = data[ix_genes,:].std(1, ddof=1)
     cv = sigma/mu
 
-    score, mu_linspace, cv_fit , params = fit_CV(mu,cv,fit_method='SVR', verbose=verbose)
-
+    try:
+        score, mu_linspace, cv_fit , params = fit_CV(mu,cv,fit_method='SVR', verbose=verbose)
+    except ImportError:
+        print "WARNING: Feature selection was skipped becouse scipy is required. Install scipy to run feature selection."
+        return arange(data.shape[0])
+ 
     return ix_genes[argsort(score)[::-1]][:thrs]
 
 def usage_quick():
