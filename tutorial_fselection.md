@@ -21,7 +21,7 @@ python backSPIN.py -i oligos.cef -o oligos_clustered_500.cef -f 500 -d 3 -v
 
 ### Feature selection with ceftools
 
-[Ceftools](https://github.com/linnarsson-lab/ceftools) is a general tool for manipulating CEF files. You can use it to easily calculate the `noise` as defined above, and then filter out the top noisiest genes. For that, you need to chain three commands: `cef aggregate` (to calculate noise), `cef sort` (to sort genes by noise) and `cef select` (to select the top N genes). Here's how:
+[Ceftools](https://github.com/linnarsson-lab/ceftools) is a general tool for manipulating CEF files. You can use it to easily calculate the `noise` as defined above, and then pick out the top noisiest genes. For that, you need to chain three commands: `cef aggregate` (to calculate noise), `cef sort` (to sort genes by noise) and `cef select` (to select the top N genes). Here's how:
 
 ```
 < oligos.cef cef aggregate --noise std | cef sort --by Noise --reverse | cef select --range 1:500 > oligos_top500.cef
