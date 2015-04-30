@@ -8,7 +8,7 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 Download a beta release for Mac OS X on the [release page](https://github.com/linnarsson-lab/BackSPIN/releases).
 
-For other platforms, download the source and run from Python. BackSPIN requires [numpy](http://www.numpy.org). For feature selection, it also requires [scipy](http://www.scipy.org) and [scikit-learn](http://scikit-learn.org/stable/). Alternatively, use ceftools for feature selection ([tutorial](tutorial_fselection.md)).
+For other platforms, download the source and run from Python. BackSPIN requires [numpy](http://www.numpy.org). For feature selection ([tutorial](tutorial_fselection.md)), it also requires [scipy](http://www.scipy.org) and optionally [scikit-learn](http://scikit-learn.org/stable/). Alternatively, you can use ceftools for feature selection.
 
 BackSPIN takes input in CEF format and produces an annotated CEF file as output. Use [ceftools](https://github.com/linnarsson-lab/ceftools) to create and manipulate CEF files.
 
@@ -88,7 +88,7 @@ The **depth of clustering** `-d` is the number of levels of binary splits that w
 
 The **feature selection** option `-f` is not mandatory, but in practice is almost always used (not supported in the binary release, see below). This option will select a number of features (i.e. genes) based on *expected noise*. That is, genes will be ranked by how large their CV (standard deviation divided by the mean) is, compared to other genes that have similar mean expression (as described in Zeisel et al., Science 2015 and in Islam et al. Nature Methods 2014). `-f 500` will select the 500 most variable genes according to this ranking. BackSPIN runs take O(n<sup>3</sup>), so selecting more genes will quickly lead to long runs. 
 
-**Note:** feature selection is not supported by the binary backspin releases. You can [use ceftools](tutorial_fselection.md) instead.
+**Note:** You can also [use ceftools](tutorial_fselection.md) for feature selection.
 
 The `-v` option makes BackSPIN print a verbose description of what's going on.
 
