@@ -14,7 +14,7 @@ A reasonable fit can often be obtained by fitting *log(CV) = log(mean<sup>k<sub>
 Feature selection in BackSPIN is as easy as passing the `-f N` option, which will select the top N genes based on the noise criterion described above. In other words, to cluster the `oligos.cef` dataset based on the top 500 noisiest genes, do this:
 
 ```
-python backSPIN.py -i oligos.cef -o oligos_clustered_500.cef -f 500 -d 3 -v
+backspin -i oligos.cef -o oligos_clustered_500.cef -f 500 -d 3 -v
 ```
 
 ### Feature selection with ceftools
@@ -25,7 +25,7 @@ python backSPIN.py -i oligos.cef -o oligos_clustered_500.cef -f 500 -d 3 -v
 < oligos.cef cef aggregate --noise std | cef sort --by Noise --reverse | cef select --range 1:500 > oligos_top500.cef
 ```
 
-Then you can use this new file as input to BackSPIN (and this time, the binary backSPIN is fine:
+Then you can use this new file as input to BackSPIN:
 
 ```
 backspin -i oligos_top500.cef -o oligos_clustered_500.cef -d 3 -v
