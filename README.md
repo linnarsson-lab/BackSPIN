@@ -88,7 +88,7 @@ The **depth of clustering** `-d` is the number of levels of binary splits that w
 
 The **feature selection** option `-f` is not mandatory, but in practice is almost always used (not supported in the binary release, see below). This option will select a number of features (i.e. genes) based on *expected noise*. That is, genes will be ranked by how large their CV (standard deviation divided by the mean) is, compared to other genes that have similar mean expression (as described in Zeisel et al., Science 2015 and in Islam et al. Nature Methods 2014). `-f 500` will select the 500 most variable genes according to this ranking. BackSPIN runs take O(n<sup>3</sup>), so selecting more genes will quickly lead to long runs. 
 
-**Note:** You can also [use ceftools](tutorial_fselection.md) for feature selection.
+For more information about feature selection, check out the [tutorial](tutorial_fselection.md).
 
 The `-v` option makes BackSPIN print a verbose description of what's going on.
 
