@@ -76,7 +76,8 @@ def _calc_weights_matrix(mat_size, wid):
     sqd **= 2
     ##make the distance relative to the mat_size
     divisor = 1.0 /  (-wid * mat_size)
-    weights_mat = exp(sqd * divisor)
+    weights_mat = sqd * divisor
+    weights_mat = exp(weights_mat, weights_mat)
     #avoid useless precision that would slow down the matrix multiplication
     weights_mat -= 1e-6
     weights_mat[weights_mat<0] = 0
