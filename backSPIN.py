@@ -74,28 +74,18 @@ def _calc_weights_matrix(mat_size, wid):
     #calculate square distance from the diagonal
     sqd = arange(1,mat_size+1)[newaxis,:] - arange(1,mat_size+1)[:,newaxis]
     sqd **= 2
-
     ##make the distance relative to the mat_size
-    #norm_sqd = sqd/wid
-    ##evaluate a normal pdf
-    #weights_mat = exp(-norm_sqd/mat_size)
-    weights_mat = exp(sqd / (-wid * mat_size))
-
+    divisor = 1.0 /  (-wid * mat_size)
+    weights_mat = exp(sqd * divisor)
     #avoid useless precision that would slow down the matrix multiplication
     weights_mat -= 1e-6
-    #weights_mat[weights_mat<0] = 0
-    place(weights_mat, weights_mat < 0, 0)
-
+    weights_mat[weights_mat<0] = 0
     #normalize row and column sum
-    weights_mat /= sum(weights_mat,0)[newaxis,:]
-    weights_mat /= sum(weights_mat,1)[:, newaxis]
-
+    weights_mat /= sum(weights_mat,0)[newaxis,:] * sum(weights_mat,1)[:, newaxis]
     #fix asymmetries
-    #weights_mat = (weights_mat + weights_mat.T) / 2.
     weights_mat += weights_mat.T
-    weights_mat /= 2.
+    weights_mat *= 0.5
     return weights_mat
-
 
 def _sort_neighbourhood( dist_matrix, wid ):
     '''Perform a single iteration of SPIN
@@ -126,7 +116,6 @@ def _sort_neighbourhood( dist_matrix, wid ):
     sorted_ind = sort_score.argsort(0)[::-1]
     return sorted_ind
 
-
 def sort_mat_by_neighborhood(dist_matrix, wid, times):
     '''Perform several iterations of SPIN using a fixed wid parameter
     Parameters
@@ -145,53 +134,13 @@ def sort_mat_by_neighborhood(dist_matrix, wid, times):
         indexes that order the matrix
 
     '''
-    # # original indexes
-    # indexes = arange(dist_matrix.shape[0])
-    # for i in range(times):
-    #     #sort the sitance matrix according the previous iteration
-    #     tmpmat = dist_matrix[indexes,:]
-    #     tmpmat = tmpmat[:,indexes]
-    #     sorted_ind = _sort_neighbourhood(tmpmat, wid);
-    #     #resort the original indexes
-    #     indexes = indexes[sorted_ind]
-    # return indexes
-
-    # manual inlining of _sort_neighbourhood
-    # to maximise array re-use
-
     # original indexes
-    assert wid > 0, 'Parameter wid < 0 is not allowed'
     indexes = arange(dist_matrix.shape[0])
-    mismatch_score = None
     for i in range(times):
         #sort the sitance matrix according the previous iteration
         tmpmat = dist_matrix[indexes,:]
         tmpmat = tmpmat[:,indexes]
-
-        mat_size = tmpmat.shape[0]
-        #assert mat_size>2, 'Matrix is too small to be sorted'
-        weights_mat = _calc_weights_matrix(mat_size, wid)
-        #Calculate the dot product (can be very slow for big mat_size)
-        # hackish trick: first loop mismatch_score will be None, so dot()
-        # creates a new ndarray. After that it will reuse this array.
-        mismatch_score = dot(tmpmat, weights_mat, mismatch_score)
-
-        target_permutation = mismatch_score.argmin(1)
-        energy = mismatch_score.min(1)
-        max_energy = max(energy)
-
-        # #Avoid points that have the same target_permutation value
-        # sort_score = target_permutation - 0.1 * sign( (mat_size/2 - target_permutation) ) * energy/max_energy
-        # #sort_score = target_permutation - 0.1 * sign( 1-2*(int(1000*energy/max_energy) % 2) ) * energy/max_energy # Alternative
-        # Sorting the matrix
-        # sorted_ind = sort_score.argsort(0)[::-1]
-
-        mat_size /= 2
-        t = sign( (mat_size - target_permutation) )
-        t *= energy/max_energy
-        t *= 0.1
-        sort_score = target_permutation - t
-        sorted_ind = sort_score.argsort(0)[::-1]
+        sorted_ind = _sort_neighbourhood(tmpmat, wid);
         #resort the original indexes
         indexes = indexes[sorted_ind]
     return indexes
