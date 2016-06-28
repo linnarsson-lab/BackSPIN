@@ -44,6 +44,27 @@ from Cef_tools import CEF_obj
 class Results:
         pass
 
+def calc_loccenter(x, lin_log_flag):
+    M,N = x.shape
+    if N==1 and M>1:
+        x = x.T
+    M,N = x.shape
+    loc_center = zeros(M)
+    min_x = x.min(1)
+    x = x - min_x[:,newaxis]
+    for i in range(M):
+        ind = where(x[i,:]>0)[0]
+        if len(ind) != 0:
+            if lin_log_flag == 1:
+                w = x[i,ind]/sum(x[i,ind], 0)
+            else:
+                w = (2**x[i,ind])/sum(2**x[i,ind], 0)
+            loc_center[i] = sum(w*ind, 0)       
+        else:
+            loc_center[i] = 0
+
+    return loc_center
+
 def _calc_weights_matrix(mat_size, wid):
     '''Calculate Weight Matrix
     Parameters
@@ -452,26 +473,24 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         # Divide in two groups
         gr1 = arange(N)[:breakp1]
         gr2 = arange(N)[breakp1:]
-        # and assign the genes into the two groups on the basis of the mean
-        mean_gr1 = mean( sorted_data[:,gr1],1 )
-        mean_gr2 = mean( sorted_data[:,gr2],1 )
-        d = abs( mean_gr1 - mean_gr2 )
-        # Deal with low variance genes using correlation with other genes to assign them to one of the groups
-        # This is  considered reliable if the original group contained more than 20 genes 
-        if len(d) > 20:
-            # For every difference lower than a threshold 
-            for i in range(len(d)): 
-                if d[i] < low_thrs:
-                    IN = Rgenes[i,:] > percentile(Rgenes[i,:], 100 - 100*(20./float(len(d))))
-                    mean_gr1[i] = sorted_data[ix_(IN,gr1)].sum(0).mean() #the mean of the sum of the columns
-                    mean_gr2[i] = sorted_data[ix_(IN,gr2)].sum(0).mean()
-                    
-        bigger_gr1 = (mean_gr1 - mean_gr2) > 0 # boolean vector
-        
-        # Avoid group of cells with no genes to be formed by adding the highest 
-        # expressed gene to the gene-empty group 
-        genesgr1 = nonzero(bigger_gr1)[0]
-        genesgr2 = nonzero(~bigger_gr1)[0]
+        # and assign the genes into the two groups
+        mean_gr1 = sorted_data[:,gr1].mean(1)
+        mean_gr2 = sorted_data[:,gr2].mean(1)
+        concat_loccenter_gr1 = c_[ calc_loccenter(sorted_data[:,gr1], 2), calc_loccenter(sorted_data[:,gr1][...,::-1], 2) ]
+        concat_loccenter_gr2 = c_[ calc_loccenter(sorted_data[:,gr2], 2), calc_loccenter(sorted_data[:,gr2][...,::-1], 2) ]
+        center_gr1, flip_flag1 = concat_loccenter_gr1.min(1), concat_loccenter_gr1.argmin(1)
+        center_gr2, flip_flag2 = concat_loccenter_gr2.max(1), concat_loccenter_gr2.argmax(1)
+        sorted_data_tmp = array( sorted_data )
+        sorted_data_tmp[ix_(flip_flag1==1,gr1)] = sorted_data[ix_(flip_flag1==1,gr1)][...,::-1]
+        sorted_data_tmp[ix_(flip_flag2==1,gr2)] = sorted_data[ix_(flip_flag2==1,gr2)][...,::-1]
+        loc_center = calc_loccenter(sorted_data_tmp, 2)
+
+        imax = zeros(loc_center.shape)
+        imax[loc_center<=breakp1] = 1
+        imax[loc_center>breakp1] = 2
+
+        genesgr1 = where(imax==1)[0]
+        genesgr2 = where(imax==2)[0]
         if size(genesgr1) == 0:
             IN = argmax(mean_gr1)
             genesgr1 = array([IN])
@@ -904,6 +923,7 @@ if __name__ == '__main__':
         output_cef.set_matrix(data[results[0],:][:,results[1]])
 
         output_cef.writeCEF( outfiles_path )
+
 
 
 
