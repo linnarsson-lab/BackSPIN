@@ -813,7 +813,10 @@ if __name__ == '__main__':
         elif opt == '-b':
             normal_spin = True
             if a != '':
-                normal_spin_axis = a
+                if a == 'both':
+                    normal_spin_axis = a
+                else:
+                    normal_spin_axis = int(a)
         else:
             assert False, "%s option is not supported" % opt
 
@@ -897,7 +900,7 @@ if __name__ == '__main__':
         print 'Input file:\n%s\n' % input_path
         print 'Output file:\n%s\n' % outfiles_path
 
-        results = SPIN(dt, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
+        results = SPIN(data, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
 
         print '\nWriting output.\n'
 
