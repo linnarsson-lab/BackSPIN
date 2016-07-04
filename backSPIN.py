@@ -914,17 +914,17 @@ if __name__ == '__main__':
                 output_cef.add_col_attr(c_name, array(c_val)[results[1]])
             for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
                 output_cef.add_row_attr(r_name, array(r_val)[results[0]])
-            output_cef.set_matrix(data[results[0],:][:,results[1]])
+            output_cef.set_matrix(array(input_cef.matrix)[results[0],:][:,results[1]])
 
         if normal_spin_axis == 0:
             for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
                 output_cef.add_row_attr(r_name, array(r_val)[results])
-            output_cef.set_matrix(data[results,:])
+            output_cef.set_matrix(array(input_cef.matrix)[results,:])
 
         if normal_spin_axis == 1:
             for c_name, c_val in zip( input_cef.col_attr_names, input_cef.col_attr_values):
                 output_cef.add_col_attr(c_name, array(c_val)[results])
-            output_cef.set_matrix(data[:,results])
+            output_cef.set_matrix(array(input_cef.matrix)[:,results])
 
         
 
