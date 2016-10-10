@@ -72,11 +72,7 @@ def calc_loccenter(x, lin_log_flag):
                 w = x[i,ind]/sum(x[i,ind], 0)
             else:
                 w = (2**x[i,ind])/sum(2**x[i,ind], 0)
-<<<<<<< HEAD
             loc_center[i] = sum(w*ind, 0)
-=======
-            loc_center[i] = sum(w*ind, 0)       
->>>>>>> master
         else:
             loc_center[i] = 0
 
@@ -490,19 +486,12 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         gr1 = arange(N)[:breakp1]
         gr2 = arange(N)[breakp1:]
         # and assign the genes into the two groups
-<<<<<<< HEAD
         sorted_gr1 = sorted_data[:,gr1]
         sorted_gr2 = sorted_data[:,gr2]
         mean_gr1 = sorted_gr1.mean(1)
         mean_gr2 = sorted_gr2.mean(1)
         concat_loccenter_gr1 = c_[ calc_loccenter(sorted_gr1, 2), calc_loccenter(sorted_gr1[...,::-1], 2) ]
         concat_loccenter_gr2 = c_[ calc_loccenter(sorted_gr2, 2), calc_loccenter(sorted_gr2[...,::-1], 2) ]
-=======
-        mean_gr1 = sorted_data[:,gr1].mean(1)
-        mean_gr2 = sorted_data[:,gr2].mean(1)
-        concat_loccenter_gr1 = c_[ calc_loccenter(sorted_data[:,gr1], 2), calc_loccenter(sorted_data[:,gr1][...,::-1], 2) ]
-        concat_loccenter_gr2 = c_[ calc_loccenter(sorted_data[:,gr2], 2), calc_loccenter(sorted_data[:,gr2][...,::-1], 2) ]
->>>>>>> master
         center_gr1, flip_flag1 = concat_loccenter_gr1.min(1), concat_loccenter_gr1.argmin(1)
         center_gr2, flip_flag2 = concat_loccenter_gr2.max(1), concat_loccenter_gr2.argmax(1)
         sorted_data_tmp = array( sorted_data )
@@ -955,7 +944,7 @@ if __name__ == '__main__':
 
 =======
 
-        
+
 >>>>>>> master
 
         output_cef.writeCEF( outfiles_path )
