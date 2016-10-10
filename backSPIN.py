@@ -57,6 +57,27 @@ def arrays_share_data(x, y):
 class Results:
         pass
 
+def calc_loccenter(x, lin_log_flag):
+    M,N = x.shape
+    if N==1 and M>1:
+        x = x.T
+    M,N = x.shape
+    loc_center = zeros(M)
+    min_x = x.min(1)
+    x = x - min_x[:,newaxis]
+    for i in range(M):
+        ind = where(x[i,:]>0)[0]
+        if len(ind) != 0:
+            if lin_log_flag == 1:
+                w = x[i,ind]/sum(x[i,ind], 0)
+            else:
+                w = (2**x[i,ind])/sum(2**x[i,ind], 0)
+            loc_center[i] = sum(w*ind, 0)
+        else:
+            loc_center[i] = 0
+
+    return loc_center
+
 def _calc_weights_matrix(mat_size, wid):
     '''Calculate Weight Matrix
     Parameters
@@ -464,26 +485,26 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         # Divide in two groups
         gr1 = arange(N)[:breakp1]
         gr2 = arange(N)[breakp1:]
-        # and assign the genes into the two groups on the basis of the mean
-        mean_gr1 = mean( sorted_data[:,gr1],1 )
-        mean_gr2 = mean( sorted_data[:,gr2],1 )
-        d = abs( mean_gr1 - mean_gr2 )
-        # Deal with low variance genes using correlation with other genes to assign them to one of the groups
-        # This is  considered reliable if the original group contained more than 20 genes
-        if len(d) > 20:
-            # For every difference lower than a threshold
-            for i in range(len(d)):
-                if d[i] < low_thrs:
-                    IN = Rgenes[i,:] > percentile(Rgenes[i,:], 100 - 100*(20./float(len(d))))
-                    mean_gr1[i] = sorted_data[ix_(IN,gr1)].sum(0).mean() #the mean of the sum of the columns
-                    mean_gr2[i] = sorted_data[ix_(IN,gr2)].sum(0).mean()
+        # and assign the genes into the two groups
+        sorted_gr1 = sorted_data[:,gr1]
+        sorted_gr2 = sorted_data[:,gr2]
+        mean_gr1 = sorted_gr1.mean(1)
+        mean_gr2 = sorted_gr2.mean(1)
+        concat_loccenter_gr1 = c_[ calc_loccenter(sorted_gr1, 2), calc_loccenter(sorted_gr1[...,::-1], 2) ]
+        concat_loccenter_gr2 = c_[ calc_loccenter(sorted_gr2, 2), calc_loccenter(sorted_gr2[...,::-1], 2) ]
+        center_gr1, flip_flag1 = concat_loccenter_gr1.min(1), concat_loccenter_gr1.argmin(1)
+        center_gr2, flip_flag2 = concat_loccenter_gr2.max(1), concat_loccenter_gr2.argmax(1)
+        sorted_data_tmp = array( sorted_data )
+        sorted_data_tmp[ix_(flip_flag1==1,gr1)] = sorted_data[ix_(flip_flag1==1,gr1)][...,::-1]
+        sorted_data_tmp[ix_(flip_flag2==1,gr2)] = sorted_data[ix_(flip_flag2==1,gr2)][...,::-1]
+        loc_center = calc_loccenter(sorted_data_tmp, 2)
 
-        bigger_gr1 = (mean_gr1 - mean_gr2) > 0 # boolean vector
+        imax = zeros(loc_center.shape)
+        imax[loc_center<=breakp1] = 1
+        imax[loc_center>breakp1] = 2
 
-        # Avoid group of cells with no genes to be formed by adding the highest
-        # expressed gene to the gene-empty group
-        genesgr1 = nonzero(bigger_gr1)[0]
-        genesgr2 = nonzero(~bigger_gr1)[0]
+        genesgr1 = where(imax==1)[0]
+        genesgr2 = where(imax==2)[0]
         if size(genesgr1) == 0:
             IN = argmax(mean_gr1)
             genesgr1 = array([IN])
@@ -806,7 +827,10 @@ if __name__ == '__main__':
         elif opt == '-b':
             normal_spin = True
             if a != '':
-                normal_spin_axis = a
+                if a == 'both':
+                    normal_spin_axis = a
+                else:
+                    normal_spin_axis = int(a)
         else:
             assert False, "%s option is not supported" % opt
 
@@ -890,7 +914,7 @@ if __name__ == '__main__':
         print 'Input file:\n%s\n' % input_path
         print 'Output file:\n%s\n' % outfiles_path
 
-        results = SPIN(dt, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
+        results = SPIN(data, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
 
         print '\nWriting output.\n'
 
@@ -904,18 +928,22 @@ if __name__ == '__main__':
                 output_cef.add_col_attr(c_name, array(c_val)[results[1]])
             for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
                 output_cef.add_row_attr(r_name, array(r_val)[results[0]])
+            output_cef.set_matrix(array(input_cef.matrix)[results[0],:][:,results[1]])
 
-        if normal_spin_axis == '0':
+        if normal_spin_axis == 0:
             for r_name, r_val in zip( input_cef.row_attr_names, input_cef.row_attr_values):
                 output_cef.add_row_attr(r_name, array(r_val)[results])
+            output_cef.set_matrix(array(input_cef.matrix)[results,:])
 
-        if normal_spin_axis == '1':
+        if normal_spin_axis == 1:
             for c_name, c_val in zip( input_cef.col_attr_names, input_cef.col_attr_values):
                 output_cef.add_col_attr(c_name, array(c_val)[results])
+            output_cef.set_matrix(array(input_cef.matrix)[:,results])
 
-        output_cef.set_matrix(data[results[0],:][:,results[1]])
+
 
         output_cef.writeCEF( outfiles_path )
+
 
 
 
