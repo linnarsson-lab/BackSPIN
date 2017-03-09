@@ -24,13 +24,13 @@ cd BackSPIN
 python setup.py install
 ```
 
-3. (a) Run directly your the command line tool
+3. Run directly your the command line tool
 
 ```
 backspin -i oligos.cef -o oligos_clustered.cef -f 500 -v
 ```
 
-3. (b) OR in alternative use the functions form the library directly in Python/IPython
+OR in alternative use the functions form the library directly in Python/IPython
 
 ```
 python
