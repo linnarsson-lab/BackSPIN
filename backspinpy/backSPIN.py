@@ -34,12 +34,12 @@
 # pyinstaller -F backSPIN.py -n backspin-mac-64-bit
 #
 
-from __future__ import division
+from __future__ import division, print_function, absolute_import
 from numpy import *
 import getopt
 import sys
 import os
-from Cef_tools import CEF_obj
+from .Cef_tools import CEF_obj
 
 class Results:
         pass
@@ -221,8 +221,8 @@ def SPIN(dt, widlist=[10,1], iters=30, axis='both', verbose=False):
             widlist_r = _generate_widlist(dt, axis=0, step=widlist)
             widlist_c = _generate_widlist(dt, axis=1, step=widlist)
         if verbose:
-                print '\nSorting genes.'
-                print 'Neighbourood=',
+                print('\nSorting genes.')
+                print('Neighbourood=', end=""),
         for wid in widlist_r:
             if verbose:
                 print ('%i, ' % wid),
@@ -231,8 +231,8 @@ def SPIN(dt, widlist=[10,1], iters=30, axis='both', verbose=False):
             CCr = CCr[INDr,:][:,INDr]
             IXr = IXr[INDr]
         if verbose:
-                print '\nSorting cells.'
-                print 'Neighbourood=',
+                print ('\nSorting cells.')
+                print ('Neighbourood=',end="")
         for wid in widlist_c:
             if verbose:
                 print ('%i, ' % wid),
@@ -247,10 +247,10 @@ def SPIN(dt, widlist=[10,1], iters=30, axis='both', verbose=False):
         if type(widlist) != list:
             widlist = _generate_widlist(dt, axis=0, step=widlist)
         if verbose:
-                print '\nSorting genes.\nNeighbourood=',
+                print ('\nSorting genes.\nNeighbourood=',end="")
         for wid in widlist:
             if verbose:
-                print '%i, ' % wid,
+                print ('%i, ' % wid,end="")
                 sys.stdout.flush()
             INDr = sort_mat_by_neighborhood(CCr, wid, iters)
             CCr = CCr[INDr,:][:,INDr]
@@ -262,10 +262,10 @@ def SPIN(dt, widlist=[10,1], iters=30, axis='both', verbose=False):
         if type(widlist) != list:
             widlist = _generate_widlist(dt, axis=1, step=widlist)
         if verbose:
-            print '\nSorting cells.\nNeighbourood=',
+            print ('\nSorting cells.\nNeighbourood=',end="")
         for wid in widlist:
             if verbose:
-                print '%i, ' % wid,
+                print ('%i, ' % wid,end="")
                 sys.stdout.flush()
             INDc = sort_mat_by_neighborhood(CCc, wid, iters)
             CCc = CCc[:,INDc][INDc,:]
@@ -343,7 +343,7 @@ def backSPIN(data, numLevels=2, first_run_iters=10, first_run_step=0.05, runs_it
 
     # Do a Preparatory SPIN on cells
     if verbose:
-        print '\nPreparatory SPIN'
+        print ('\nPreparatory SPIN')
     ix1 = SPIN(data, widlist=_generate_widlist(data, axis=1, step=first_run_step), iters=first_run_iters, axis=1, verbose=verbose)
     cells_order = cells_order[ix1]
 
@@ -462,7 +462,7 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
     score1 = Rcells[:breakp1,:breakp1]
     score1 = triu(score1)
     score1 = mean( score1[score1 != 0] )
-    score2 = Rcells[breakp1:,breakp1:]
+    score2 = Rcells[breakp1:, breakp1:]
     score2 = triu(score2)
     score2 = mean( score2[score2 != 0] )
     avg_tot = triu(Rcells)
@@ -474,8 +474,8 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
         gr1 = arange(N)[:breakp1]
         gr2 = arange(N)[breakp1:]
         # and assign the genes into the two groups
-        mean_gr1 = sorted_data[:,gr1].mean(1)
-        mean_gr2 = sorted_data[:,gr2].mean(1)
+        mean_gr1 = sorted_data[:, gr1].mean(1)
+        mean_gr2 = sorted_data[:, gr2].mean(1)
         concat_loccenter_gr1 = c_[ calc_loccenter(sorted_data[:,gr1], 2), calc_loccenter(sorted_data[:,gr1][...,::-1], 2) ]
         concat_loccenter_gr2 = c_[ calc_loccenter(sorted_data[:,gr2], 2), calc_loccenter(sorted_data[:,gr2][...,::-1], 2) ]
         center_gr1, flip_flag1 = concat_loccenter_gr1.min(1), concat_loccenter_gr1.argmin(1)
@@ -501,9 +501,9 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
             genesgr1 = setdiff1d(genesgr1, IN)
         
         if verbose:
-            print '\nSplitting (%i, %i) ' %  sorted_data.shape
-            print 'in (%i,%i) ' % (genesgr1.shape[0],gr1.shape[0])
-            print 'and (%i,%i)' % (genesgr2.shape[0],gr2.shape[0]),
+            print ('\nSplitting (%i, %i) ' %  sorted_data.shape)
+            print ('in (%i,%i) ' % (genesgr1.shape[0],gr1.shape[0]))
+            print ('and (%i,%i)' % (genesgr2.shape[0],gr2.shape[0]),end="")
             sys.stdout.flush()
 
         # Data of group1
@@ -554,7 +554,7 @@ def _divide_to_2and_resort(sorted_data, wid, iters_spin=8, stop_const = 1.15, lo
 
     else:
         if verbose:
-            print 'Low splitting score was : %.4f' % (max([score1,score2])/avg_tot)
+            print('Low splitting score was : %.4f' % (max([score1,score2])/avg_tot))
         return False
 
 
@@ -608,7 +608,7 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
                 log2_cv = r_[ log2_cv, tile(log2_cv[ind], around(med_n/len(ind))-1) ]
     else:
         if 'bin' in fit_method:
-            print 'More than 1000 input feature needed for bin correction.'
+            print('More than 1000 input feature needed for bin correction.')
         pass
                 
     if 'SVR' in fit_method:
@@ -629,7 +629,7 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
             
         except ImportError:
             if verbose:
-                print 'SVR fit requires scikit-learn python library. Using exponential instead.'
+                print('SVR fit requires scikit-learn python library. Using exponential instead.')
             if 'bin' in fit_method:
                 return fit_CV(mu, cv, fit_method='binExp', x0=x0)
             else:
@@ -655,8 +655,8 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
 def feature_selection(data,thrs, verbose=False):
     if thrs>= data.shape[0]:
         if verbose:
-            print "Trying to select %i features but only %i genes available." %( thrs, data.shape[0])
-            print "Skipping feature selection"
+            print ("Trying to select %i features but only %i genes available." %( thrs, data.shape[0]))
+            print ("Skipping feature selection")
         return arange(data.shape[0])
     ix_genes = arange(data.shape[0])
     threeperK = int(ceil(3*data.shape[1]/1000.))
@@ -672,7 +672,7 @@ def feature_selection(data,thrs, verbose=False):
     try:
         score, mu_linspace, cv_fit , params = fit_CV(mu,cv,fit_method='SVR', verbose=verbose)
     except ImportError:
-        print "WARNING: Feature selection was skipped becouse scipy is required. Install scipy to run feature selection."
+        print ("WARNING: Feature selection was skipped becouse scipy is required. Install scipy to run feature selection.")
         return arange(data.shape[0])
  
     return ix_genes[argsort(score)[::-1]][:thrs]
@@ -682,7 +682,7 @@ def usage_quick():
     message ='''usage: backSPIN [-hbv] [-i inputfile] [-o outputfolder] [-d int] [-f int] [-t int] [-s float] [-T int] [-S float] [-g int] [-c int] [-k float] [-r float]
     manual: backSPIN -h
     '''
-    print message
+    print (message)
 
 def usage():
 
@@ -749,12 +749,12 @@ def usage():
 
     '''
 
-    print message
+    print(message)
 
 
 
 if __name__ == '__main__':
-    print 
+    print("")
     #defaults arguments
     input_path = None
     outfiles_path = None
@@ -821,15 +821,15 @@ if __name__ == '__main__':
             assert False, "%s option is not supported" % opt
 
     if input_path == None:
-        print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.cef)\n'
+        print ('No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.cef)\n')
         sys.exit()
     if outfiles_path == None:
-        print 'No output file was provided.\nYou need to specify an output file\n(e.g. backSPIN -o path/to/your/file/bar.cef)\n'
+        print ('No output file was provided.\nYou need to specify an output file\n(e.g. backSPIN -o path/to/your/file/bar.cef)\n')
         sys.exit()
 
     try:
         if verbose:
-            print 'Loading file.'
+            print ('Loading file.')
         input_cef = CEF_obj()
         input_cef.readCEF(input_path)
 
@@ -837,10 +837,10 @@ if __name__ == '__main__':
 
         if feature_fit:
             if verbose:
-                print "Performing feature selection"
+                print ("Performing feature selection")
             ix_features = feature_selection(data, feature_genes, verbose=verbose)
             if verbose:
-                print "Selected %i genes" % len(ix_features)
+                print ("Selected %i genes" % len(ix_features))
             data = data[ix_features, :]
             input_cef.matrix = data.tolist()
             input_cef.row_attr_values = atleast_2d( array( input_cef.row_attr_values ))[:,ix_features].tolist()
@@ -849,30 +849,30 @@ if __name__ == '__main__':
         data = log2(data+1)
         data = data - data.mean(1)[:,newaxis]
         if data.shape[0] <= 3 and data.shape[1] <= 3:
-            print 'Input file is not correctly formatted.\n'
+            print ('Input file is not correctly formatted.\n')
             sys.exit()
-    except Exception, err:
+    except Exception as err:
         import traceback
-        print 'There was an error'
-        print traceback.format_exc()
-        print 'Error occurred in parsing the input file.'
-        print 'Please check that your input file is a correctly formatted cef file.\n'
+        print ('There was an error')
+        print (traceback.format_exc())
+        print ('Error occurred in parsing the input file.')
+        print ('Please check that your input file is a correctly formatted cef file.\n')
         sys.exit()
 
     if normal_spin == False:
 
-        print 'backSPIN started\n----------------\n'
-        print 'Input file:\n%s\n' % input_path
-        print 'Output file:\n%s\n' % outfiles_path
-        print 'numLevels: %i\nfirst_run_iters: %i\nfirst_run_step: %.3f\nruns_iters: %i\nruns_step: %.3f\nsplit_limit_g: %i\nsplit_limit_c: %i\nstop_const: %.3f\nlow_thrs: %.3f\n' % (numLevels, first_run_iters, first_run_step, runs_iters,\
-            runs_step, split_limit_g, split_limit_c, stop_const, low_thrs)
+        print ('backSPIN started\n----------------\n')
+        print ('Input file:\n%s\n' % input_path)
+        print ('Output file:\n%s\n' % outfiles_path)
+        print ('numLevels: %i\nfirst_run_iters: %i\nfirst_run_step: %.3f\nruns_iters: %i\nruns_step: %.3f\nsplit_limit_g: %i\nsplit_limit_c: %i\nstop_const: %.3f\nlow_thrs: %.3f\n' % (numLevels, first_run_iters, first_run_step, runs_iters,\
+            runs_step, split_limit_g, split_limit_c, stop_const, low_thrs))
 
 
         results = backSPIN(data, numLevels, first_run_iters, first_run_step, runs_iters, runs_step,\
             split_limit_g, split_limit_c, stop_const, low_thrs, verbose)
 
         sys.stdout.flush()
-        print '\nWriting output.\n'
+        print ('\nWriting output.\n')
 
         output_cef = CEF_obj()
 
@@ -896,13 +896,13 @@ if __name__ == '__main__':
         output_cef.writeCEF( outfiles_path, matrix_str_fmt=fmt )
     else:
 
-        print 'normal SPIN started\n----------------\n'
-        print 'Input file:\n%s\n' % input_path
-        print 'Output file:\n%s\n' % outfiles_path
+        print ('normal SPIN started\n----------------\n')
+        print ('Input file:\n%s\n' % input_path)
+        print ('Output file:\n%s\n' % outfiles_path)
 
         results = SPIN(data, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
 
-        print '\nWriting output.\n'
+        print ('\nWriting output.\n')
 
         output_cef = CEF_obj()
 
@@ -929,11 +929,4 @@ if __name__ == '__main__':
         
 
         output_cef.writeCEF( outfiles_path )
-
-
-
-
-
-
-
 

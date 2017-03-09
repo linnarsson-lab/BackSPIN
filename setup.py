@@ -7,6 +7,7 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
+        'future',
         'numpy',
         'scipy',
         'scikit-learn'

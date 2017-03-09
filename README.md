@@ -6,7 +6,7 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 ## Getting started
 
-1. [Suggested, not mandatory] Install Anaconda (https://www.continuum.io/downloads), Python 2.7 version, to have all the dependencies up and running
+1. [Suggested, not mandatory] Install Anaconda (https://www.continuum.io/downloads) to have all the dependencies up and running (both Python 2.7/3.6 version will work)
 
 2. Install `backspinpy` in one of the following ways:
 

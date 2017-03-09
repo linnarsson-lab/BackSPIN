@@ -43,12 +43,13 @@ from backspinpy import SPIN, backSPIN, fit_CV, feature_selection
 from backspinpy import CEF_obj
 
 
+
 def usage_quick():
 
     message ='''usage: backSPIN [-hbv] [-i inputfile] [-o outputfolder] [-d int] [-f int] [-t int] [-s float] [-T int] [-S float] [-g int] [-c int] [-k float] [-r float]
     manual: backSPIN -h
     '''
-    print message
+    print (message)
 
 def usage():
 
@@ -115,12 +116,12 @@ def usage():
 
     '''
 
-    print message
+    print(message)
 
 
 
 if __name__ == '__main__':
-    print 
+    print("")
     #defaults arguments
     input_path = None
     outfiles_path = None
@@ -187,15 +188,15 @@ if __name__ == '__main__':
             assert False, "%s option is not supported" % opt
 
     if input_path == None:
-        print 'No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.cef)\n'
+        print ('No input file was provided.\nYou need to specify an input file\n(e.g. backSPIN -i path/to/your/file/foo.cef)\n')
         sys.exit()
     if outfiles_path == None:
-        print 'No output file was provided.\nYou need to specify an output file\n(e.g. backSPIN -o path/to/your/file/bar.cef)\n'
+        print ('No output file was provided.\nYou need to specify an output file\n(e.g. backSPIN -o path/to/your/file/bar.cef)\n')
         sys.exit()
 
     try:
         if verbose:
-            print 'Loading file.'
+            print ('Loading file.')
         input_cef = CEF_obj()
         input_cef.readCEF(input_path)
 
@@ -203,42 +204,42 @@ if __name__ == '__main__':
 
         if feature_fit:
             if verbose:
-                print "Performing feature selection"
+                print ("Performing feature selection")
             ix_features = feature_selection(data, feature_genes, verbose=verbose)
             if verbose:
-                print "Selected %i genes" % len(ix_features)
+                print ("Selected %i genes" % len(ix_features))
             data = data[ix_features, :]
             input_cef.matrix = data.tolist()
             input_cef.row_attr_values = atleast_2d( array( input_cef.row_attr_values ))[:,ix_features].tolist()
             input_cef.update()
-        
+
         data = log2(data+1)
         data = data - data.mean(1)[:,newaxis]
         if data.shape[0] <= 3 and data.shape[1] <= 3:
-            print 'Input file is not correctly formatted.\n'
+            print ('Input file is not correctly formatted.\n')
             sys.exit()
-    except Exception, err:
+    except Exception as err:
         import traceback
-        print 'There was an error'
-        print traceback.format_exc()
-        print 'Error occurred in parsing the input file.'
-        print 'Please check that your input file is a correctly formatted cef file.\n'
+        print ('There was an error')
+        print (traceback.format_exc())
+        print ('Error occurred in parsing the input file.')
+        print ('Please check that your input file is a correctly formatted cef file.\n')
         sys.exit()
 
     if normal_spin == False:
 
-        print 'backSPIN started\n----------------\n'
-        print 'Input file:\n%s\n' % input_path
-        print 'Output file:\n%s\n' % outfiles_path
-        print 'numLevels: %i\nfirst_run_iters: %i\nfirst_run_step: %.3f\nruns_iters: %i\nruns_step: %.3f\nsplit_limit_g: %i\nsplit_limit_c: %i\nstop_const: %.3f\nlow_thrs: %.3f\n' % (numLevels, first_run_iters, first_run_step, runs_iters,\
-            runs_step, split_limit_g, split_limit_c, stop_const, low_thrs)
+        print ('backSPIN started\n----------------\n')
+        print ('Input file:\n%s\n' % input_path)
+        print ('Output file:\n%s\n' % outfiles_path)
+        print ('numLevels: %i\nfirst_run_iters: %i\nfirst_run_step: %.3f\nruns_iters: %i\nruns_step: %.3f\nsplit_limit_g: %i\nsplit_limit_c: %i\nstop_const: %.3f\nlow_thrs: %.3f\n' % (numLevels, first_run_iters, first_run_step, runs_iters,\
+            runs_step, split_limit_g, split_limit_c, stop_const, low_thrs))
 
 
         results = backSPIN(data, numLevels, first_run_iters, first_run_step, runs_iters, runs_step,\
             split_limit_g, split_limit_c, stop_const, low_thrs, verbose)
 
         sys.stdout.flush()
-        print '\nWriting output.\n'
+        print ('\nWriting output.\n')
 
         output_cef = CEF_obj()
 
@@ -262,13 +263,13 @@ if __name__ == '__main__':
         output_cef.writeCEF( outfiles_path, matrix_str_fmt=fmt )
     else:
 
-        print 'normal SPIN started\n----------------\n'
-        print 'Input file:\n%s\n' % input_path
-        print 'Output file:\n%s\n' % outfiles_path
+        print ('normal SPIN started\n----------------\n')
+        print ('Input file:\n%s\n' % input_path)
+        print ('Output file:\n%s\n' % outfiles_path)
 
         results = SPIN(data, widlist=runs_step, iters=runs_iters, axis=normal_spin_axis, verbose=verbose)
 
-        print '\nWriting output.\n'
+        print ('\nWriting output.\n')
 
         output_cef = CEF_obj()
 
@@ -292,14 +293,4 @@ if __name__ == '__main__':
                 output_cef.add_col_attr(c_name, array(c_val)[results])
             output_cef.set_matrix(array(input_cef.matrix)[:,results])
 
-        
-
         output_cef.writeCEF( outfiles_path )
-
-
-
-
-
-
-
-
