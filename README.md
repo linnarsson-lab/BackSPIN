@@ -10,32 +10,33 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 2. Install `backspinpy` in one of the following ways:
 
-[Suggested] Install using **pip**:
+    [Suggested] Install using **pip**:
 
-```
-pip install backspinpy
-```
+    ```
+    pip install backspinpy
+    ```
 
-or install from source:
+    or install from source:
 
-```
-git clone https://github.com/linnarsson-lab/BackSPIN
-cd BackSPIN
-python setup.py install
-```
+    ```
+    git clone https://github.com/linnarsson-lab/BackSPIN
+    cd BackSPIN
+    python setup.py install
+    ```
 
-3. Run directly your the command line tool
 
-```
-backspin -i oligos.cef -o oligos_clustered.cef -f 500 -v
-```
+3. (a) Run directly your the command line tool
 
-OR in alternative use the functions form the library directly in Python/IPython
+    ```
+    backspin -i oligos.cef -o oligos_clustered.cef -f 500 -v
+    ```
 
-```
-python
->>> from backspinpy import SPIN, backSPIN, fit_CV, feature_selection, CEF_obj
-```
+    (b) OR in alternative use the functions form the library directly in Python/IPython
+
+    ```
+    python
+    >>> from backspinpy import SPIN, backSPIN, fit_CV, feature_selection, CEF_obj
+    ```
 
 
 BackSPIN takes input in CEF format and produces an annotated CEF file as output. Use [ceftools](https://github.com/linnarsson-lab/ceftools) to create and manipulate CEF files.
