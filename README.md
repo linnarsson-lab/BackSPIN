@@ -6,9 +6,37 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
 
 ## Getting started
 
-Download a beta release for Mac OS X on the [release page](https://github.com/linnarsson-lab/BackSPIN/releases).
+1. [Suggested, not mandatory] Install Anaconda (https://www.continuum.io/downloads), Python 2.7 version, to have all the dependencies up and running
 
-For other platforms, download the source and run from Python. BackSPIN requires [numpy](http://www.numpy.org). For feature selection ([tutorial](tutorial_fselection.md)), it also requires [scipy](http://www.scipy.org) and optionally [scikit-learn](http://scikit-learn.org/stable/). Alternatively, you can use ceftools for feature selection.
+2. Install `backspinpy` in one of the following ways:
+
+[Suggested] Install using **pip**:
+
+```
+pip install backspinpy
+```
+
+or install from source:
+
+```
+git clone https://github.com/linnarsson-lab/BackSPIN
+cd BackSPIN
+python setup.py install
+```
+
+3. (a) Run directly your the command line tool
+
+```
+backspin -i oligos.cef -o oligos_clustered.cef -f 500 -v
+```
+
+3. (b) OR in alternative use the functions form the library directly in Python/IPython
+
+```
+python
+>>> from backspinpy import SPIN, backSPIN, fit_CV, feature_selection, CEF_obj
+```
+
 
 BackSPIN takes input in CEF format and produces an annotated CEF file as output. Use [ceftools](https://github.com/linnarsson-lab/ceftools) to create and manipulate CEF files.
 
