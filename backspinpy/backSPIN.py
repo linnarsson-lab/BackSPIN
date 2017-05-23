@@ -597,15 +597,15 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
             if len(ind)>med_n:
                 #Downsample if count is more than median
                 ind = ind[random.permutation(len(ind))]
-                ind = ind[:len(ind)-med_n]
+                ind = ind[:len(ind)-int(med_n)]
                 mask = ones(len(log2_m), dtype=bool)
                 mask[ind] = False
                 log2_m = log2_m[mask]
                 log2_cv = log2_cv[mask]
             elif (around(med_n/len(ind))>1) and (len(ind)>5):
                 #Duplicate if count is less than median
-                log2_m = r_[ log2_m, tile(log2_m[ind], around(med_n/len(ind))-1) ]
-                log2_cv = r_[ log2_cv, tile(log2_cv[ind], around(med_n/len(ind))-1) ]
+                log2_m = r_[ log2_m, tile(log2_m[ind], round(med_n/len(ind))-1) ]
+                log2_cv = r_[ log2_cv, tile(log2_cv[ind], round(med_n/len(ind))-1) ]
     else:
         if 'bin' in fit_method:
             print('More than 1000 input feature needed for bin correction.')
