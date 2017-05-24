@@ -593,7 +593,7 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
         med_n = percentile(n,50)
         for i in range(0,len(n)):
             # index of genes within the ith bin
-            ind = where( (log2_m >= xi[i]) & (log2_m < xi[i+1]) )[0]
+            ind = where( (log2_m >= xi[i]) & (log2_m < xi[i+1]) )[0].astype(int)
             if len(ind)>med_n:
                 #Downsample if count is more than median
                 ind = ind[random.permutation(len(ind))]
@@ -604,8 +604,8 @@ def fit_CV(mu, cv, fit_method='Exp', svr_gamma=0.06, x0=[0.5,0.5], verbose=False
                 log2_cv = log2_cv[mask]
             elif (around(med_n/len(ind))>1) and (len(ind)>5):
                 #Duplicate if count is less than median
-                log2_m = r_[ log2_m, tile(log2_m[ind], round(med_n/len(ind))-1) ]
-                log2_cv = r_[ log2_cv, tile(log2_cv[ind], round(med_n/len(ind))-1) ]
+                log2_m = r_[ log2_m, tile(log2_m[ind], int(round(med_n/len(ind))-1)) ]
+                log2_cv = r_[ log2_cv, tile(log2_cv[ind], int(round(med_n/len(ind))-1)) ]
     else:
         if 'bin' in fit_method:
             print('More than 1000 input feature needed for bin correction.')
