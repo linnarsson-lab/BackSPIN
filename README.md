@@ -16,6 +16,12 @@ Original MATLAB implementation by Amit Zeisel. This repo contains a standalone c
     pip install backspinpy
     ```
 
+    or install from [bioconda](https://bioconda.github.io/recipes/backspinpy/README.html) using **conda**:
+
+    ```
+    conda install -c bioconda backspinpy
+    ```
+
     or install from source:
 
     ```
